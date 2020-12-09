@@ -6,3 +6,7 @@ class Accountant:
     def register_trades(self,
                         trades: list):
         pass
+
+    def get_data(self,
+                 username: str):
+        pass
