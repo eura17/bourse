@@ -1,10 +1,10 @@
 class Trade:
     def __init__(self,
-                 operation: str,
+                 buyer: str,
+                 seller: str,
                  price: float,
-                 lots: int,
-                 robot: str=None):
-        self.operation = operation
+                 lots: int):
+        self.buyer = buyer
+        self.seller = seller
         self.price = price
         self.lots = lots
-        self.robot = robot

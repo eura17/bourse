@@ -10,7 +10,12 @@ class DataProvider:
         self.path_to_trading_data = ''
 
         self.data = None
-        self.last_second = 0
+        self.last_dt = dt.datetime(year=2020,
+                                   month=12,
+                                   day=11,
+                                   hour=10,
+                                   minute=0,
+                                   second=0)
         self.extras = []
 
     def generate_training_data(self,
@@ -83,6 +88,9 @@ class DataProvider:
         self.data = open(path, 'r', encoding='utf8')
         self.data.readline()
 
+    def __len__(self):
+        return 31499
+
     def __iter__(self):
         return self
 
@@ -96,21 +104,24 @@ class DataProvider:
             info = line.split(',')
             ticker, action, price = info[1], info[5], float(info[6])
             time = dt.datetime.strptime(info[3], '%H%M%S%f')
-            if ticker != 'SBER' or action != '1' or price == 0:
-                if time.second != self.last_second:
-                    self.last_second = time.second
+            if ticker != 'SBER' or action == '2':
+                if time.second != self.last_dt.second:
+                    self.last_dt += dt.timedelta(seconds=1)
                     return orders
                 continue
             operation = 'buy' if info[2] == 'B' else 'sell'
             lots = int(info[7])
             to_delete = action == '0'
+            order_no = int(info[4])
             order = Order(operation, 'limit', lots, price,
-                          datetime=time, to_delete=to_delete)
-            if time.second != self.last_second:
+                          datetime=time, order_no=order_no,
+                          to_delete=to_delete)
+            if time.second == self.last_dt.second:
                 orders.append(order)
             else:
-                self.last_second = time.second
+                self.last_dt += dt.timedelta(seconds=1)
                 self.extras.append(order)
+                return orders
         if len(orders) != 0:
             return orders
         else:
