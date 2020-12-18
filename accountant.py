@@ -42,12 +42,18 @@ class Accountant:
             self.robots_accounts[trade.buyer]['cnp_price'] = trade.price
         elif cnp_lots < 0:
             if cnp_lots + trade.lots == 0:
+                d = (trade.price - self.previous_last_price) * -trade.lots
+                self.robots_accounts[trade.buyer]['balance'] += d
                 self.robots_accounts[trade.buyer]['cnp_lots'] = 0
                 self.robots_accounts[trade.buyer]['cnp_price'] = 0.0
             elif cnp_lots + trade.lots > 0:
+                d = (trade.price - self.previous_last_price) * cnp_lots
+                self.robots_accounts[trade.buyer]['balance'] += d
                 self.robots_accounts[trade.buyer]['cnp_lots'] += trade.lots
                 self.robots_accounts[trade.buyer]['cnp_price'] = trade.price
             elif cnp_lots + trade.lots < 0:
+                d = (trade.price - self.previous_last_price) * -trade.lots
+                self.robots_accounts[trade.buyer]['balance'] += d
                 self.robots_accounts[trade.buyer]['cnp_lots'] += trade.lots
         elif cnp_lots > 0:
             self.robots_accounts[trade.buyer]['cnp_lots'] += trade.lots
@@ -66,12 +72,18 @@ class Accountant:
             self.robots_accounts[trade.seller]['cnp_price'] = trade.price
         elif cnp_lots > 0:
             if cnp_lots - trade.lots == 0:
+                d = (trade.price - self.previous_last_price) * trade.lots
+                self.robots_accounts[trade.seller]['balance'] += d
                 self.robots_accounts[trade.seller]['cnp_lots'] = 0
                 self.robots_accounts[trade.seller]['cnp_price'] = 0.0
             elif cnp_lots - trade.lots < 0:
+                d = (trade.price - self.previous_last_price) * cnp_lots
+                self.robots_accounts[trade.seller]['balance'] += d
                 self.robots_accounts[trade.seller]['cnp_lots'] += trade.lots
                 self.robots_accounts[trade.seller]['cnp_price'] = trade.price
             elif cnp_lots - trade.lots > 0:
+                d = (trade.price - self.previous_last_price) * trade.lots
+                self.robots_accounts[trade.seller]['balance'] += d
                 self.robots_accounts[trade.seller]['cnp_lots'] -= trade.lots
         elif cnp_lots < 0:
             self.robots_accounts[trade.seller]['cnp_lots'] -= trade.lots
@@ -114,7 +126,7 @@ class Accountant:
         df = pd.DataFrame(self.robots_balance_changes)
         df.index = pd.date_range(start=dt.datetime(2020, 12, 11, 10, 0, 0),
                                  periods=df.shape[0],
-                                 freq=dt.timedelta(seconds=60))
+                                 freq=dt.timedelta(seconds=30))
         fig, ax = plt.subplots(figsize=(16, 9))
         fmt = dates.DateFormatter('%H:%M:%S')
         ax.xaxis.set_major_formatter(fmt)
@@ -142,7 +154,7 @@ class Accountant:
         fig.autofmt_xdate()
         sns.lineplot(x=pd.date_range(start=dt.datetime(2020, 12, 11, 10, 0, 0),
                                      periods=len(self.prices),
-                                     freq=dt.timedelta(seconds=1)),
+                                     freq=dt.timedelta(seconds=0.5)),
                      y=self.prices)
         plt.xlabel('Торговая сессия')
         plt.ylabel('Цена актива')
