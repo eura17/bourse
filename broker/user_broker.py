@@ -9,7 +9,7 @@ class UserBroker(User):
         super().__init__('broker', 'broker')
 
     def configure(self) -> NoReturn:
-        path = 'broker\\lua'
+        path = f'{os.path.dirname(os.path.realpath(__file__))}\\lua'
         lua_files = os.listdir(path)
         for file in lua_files:
             with open(f'{path}\\{file}', 'r', encoding='utf8') as f:

@@ -32,7 +32,7 @@ class UserRobot(User):
         return
 
     @classmethod
-    def set_datetime(cls, value: dt.datetime):
+    def set_datetime(cls, value: dt.datetime) -> NoReturn:
         cls.DATETIME = value
 
     def get_active_orders(self,
@@ -40,11 +40,26 @@ class UserRobot(User):
                           ticker: str,
                           operation: str = None) -> list[Order]:
         if operation not in {'buy', 'sell'} and operation is not None:
-            self._conn.call(
+            raw_orders = self._conn.call(
                 'get_active_orders',
                 (robot, ticker, operation)
             )
-            return []
+            orders = []
+            for raw_order in raw_orders:
+                order = Order(
+                    raw_order[2],
+                    raw_order[3],
+                    raw_order[4],
+                    dt.datetime.fromtimestamp(raw_order[5]),
+                    raw_order[6],
+                    raw_order[7],
+                    raw_order[8],
+                    raw_order[9]
+                )
+                order.set_order_no(raw_order[0])
+                order.set_real_order_no(raw_order[1])
+                orders.append(order)
+            return orders
         else:
             raise OperationError(operation)
 

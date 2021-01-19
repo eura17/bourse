@@ -12,7 +12,7 @@ class UserMatchingEngine(User):
         super().__init__('matching_engine', 'matching_engine')
 
     def configure(self) -> NoReturn:
-        path = 'matchingengine\\lua'
+        path = f'{os.path.dirname(os.path.realpath(__file__))}\\lua'
         lua_files = os.listdir(path)
         for file in lua_files:
             with open(f'{path}\\{file}', 'r', encoding='utf8') as f:
@@ -40,7 +40,8 @@ class UserMatchingEngine(User):
         )[0]
         order.set_order_no(order_no)
 
-    def save_order_log(self, path: str) -> NoReturn: ...
+    def save_order_log(self, path: str) -> NoReturn:
+        raise NotImplementedError
 
     def create_trade_log(self):
         self._conn.call(
@@ -62,7 +63,8 @@ class UserMatchingEngine(User):
              trade.volume)
         )
 
-    def save_trade_log(self, path: str) -> NoReturn: ...
+    def save_trade_log(self, path: str) -> NoReturn:
+        raise NotImplementedError
 
     def create_bid_ask_spaces(self, ticker: str) -> NoReturn:
         self._conn.call(
@@ -76,6 +78,7 @@ class UserMatchingEngine(User):
             (order.ticker,
              order.operation,
              order.order_no,
+             order.real_order_no,
              order.datetime.timestamp(),
              order.price,
              order.volume,

@@ -11,6 +11,7 @@ function create_bid_ask_spaces(ticker)
         side:format(
                 {
                     {name = 'order_no', type = 'unsigned'},
+                    {name = 'real_order_no', type = 'unsigned', is_nullable = true},
                     {name = 'datetime', type = 'number'},
                     {name = 'price', type = 'number'},
                     {name = 'volume', type = 'number'},
@@ -50,12 +51,14 @@ end
 function add_order(ticker,
                    operation,
                    order_no,
+                   real_order_no,
                    datetime,
                    price,
                    volume,
                    robot)
     local space = (operation == 'buy' and 'bid' or operation == 'sell' and 'ask')..'_'..ticker
     box.space[space]:insert{order_no,
+                            real_order_no,
                             datetime,
                             price,
                             volume,
@@ -95,87 +98,108 @@ end
 function min_ask_price(ticker)
     local min_ask = box.space['ask_'..ticker].index.price:min()
     if min_ask ~= box.NULL then
-        return min_ask[3]
+        return min_ask[4]
+    else
+        return box.NULL
     end
 end
 
 function min_ask_order(ticker)
     local min_ask = min_ask_price(ticker)
-    min_ask = box.space['ask_'..ticker].index.price:select(min_ask,
-                                                           {limit = 1})[1]
-    local full_info = box.space['order_log'].index.order_no:select(min_ask[1])[1]
-    return {full_info[2],
-            full_info[3],
-            full_info[4],
-            full_info[5],
-            full_info[6],
-            full_info[7],
-            full_info[8],
-            full_info[9],
+    if min_ask ~= box.NULL then
+        min_ask = box.space['ask_'..ticker].index.price:select(min_ask, {limit=1})[1]
+    else
+        return box.NULL
+    end
+    if min_ask ~= box.NULL then
+        return {
+            min_ask[1],
+            min_ask[2],
+            ticker,
+            'sell',
+            'limit',
+            min_ask[3],
+            'set',
             min_ask[4],
-            full_info[11]}
+            min_ask[5],
+            min_ask[6]
+        }
+    else
+        return box.NULL
+    end
 end
 
 function max_bid_price(ticker)
     local max_bid = box.space['bid_'..ticker].index.price:max()
     if max_bid ~= box.NULL then
-        return max_bid[3]
+        return max_bid[4]
+    else
+        return box.NULL
     end
 end
 
 function max_bid_order(ticker)
     local max_bid = max_bid_price(ticker)
-    max_bid = box.space['bid_'..ticker].index.price:select(max_bid,
-                                                           {limit = 1})[1]
-    local full_info = box.space['order_log'].index.order_no:select(max_bid[1])[1]
-    return {full_info[2],
-            full_info[3],
-            full_info[4],
-            full_info[5],
-            full_info[6],
-            full_info[7],
-            full_info[8],
-            full_info[9],
+    if max_bid ~= box.NULL then
+        max_bid = box.space['bid_'..ticker].index.price:select(max_bid, {limit = 1})[1]
+    else
+        return box.NULL
+    end
+    if max_bid ~= box.NULL then
+        return {
+            max_bid[1],
+            max_bid[2],
+            ticker,
+            'buy',
+            'limit',
+            max_bid[3],
+            'set',
             max_bid[4],
-            full_info[11]}
+            max_bid[5],
+            max_bid[6]
+        }
+    end
 end
 
 function get_active_orders(robot, ticker, operation)
-    local raw_orders = {}
+    local raw_orders = {buy = {}, sell = {}}
     if operation == 'buy' then
         local bids = box.space['bid_'..ticker].index.robot:select(robot)[1]
         for _, order in pairs(bids) do
-            table.insert(raw_orders, order)
+            table.insert(raw_orders['buy'], order)
         end
     elseif operation == 'sell' then
         local asks = box.space['ask_'..ticker].index.robot:select(robot)[1]
         for _, order in pairs(asks) do
-            table.insert(raw_orders, order)
+            table.insert(raw_orders['sell'], order)
         end
     else
         local bids = box.space['bid_'..ticker].index.robot:select(robot)[1]
         for _, order in pairs(bids) do
-            table.insert(raw_orders, order)
+            table.insert(raw_orders['buy'], order)
         end
         local asks = box.space['ask_'..ticker].index.robot:select(robot)[1]
         for _, order in pairs(asks) do
-            table.insert(raw_orders, order)
+            table.insert(raw_orders['buy'], order)
         end
     end
     local orders = {}
-    for _, order in pairs(raw_orders) do
-        local full_info = box.space['order_log'].index.order_no:select(order[1])[1]
-        table.insert(orders,
-                {full_info[2],
-                       full_info[3],
-                       full_info[4],
-                       full_info[5],
-                       full_info[6],
-                       full_info[7],
-                       full_info[8],
-                       full_info[9],
-                       order[4],
-                       full_info[11]})
+    for side, orders_ in pairs(raw_orders['buy']) do
+        for _, order in pairs(orders_) do
+            table.insert(
+                    orders,
+                    {order[1],
+                     order[2],
+                     ticker,
+                     side,
+                     'limit',
+                     order[3],
+                     'set',
+                     order[4],
+                     order[5],
+                     order[6]}
+            )
+        end
     end
     return orders
 end

@@ -27,7 +27,7 @@ class MarketPlace:
         self.dates = self.data_provider.get_dates()
         tickers = self.data_provider.get_tickers()
 
-        self.order_book = MatchingEngine(
+        self.matching_engine = MatchingEngine(
             tickers,
             robot_names
         )
@@ -51,37 +51,37 @@ class MarketPlace:
         del self.training_data
 
     def trade(self,
-              date: dt.date):
-        self.order_book.create_order_log()
-        self.order_book.create_trade_log()
+              date: dt.date) -> NoReturn:
+        self.matching_engine.create_order_log()
+        self.matching_engine.create_trade_log()
         start_dt, end_dt = self.data_provider.get_trading_time_bounds(date)
         self.data_provider.prepare_to_load_orders_for_date(date)
         while start_dt < end_dt:
             orders = self.data_provider.get_orders(start_dt,
                                                    start_dt+self.discreteness)
             for order in orders:
-                trades = self.order_book.process_order(order)
+                trades = self.matching_engine.process_order(order)
                 for trade in trades:
                     self.broker.process_trade(trade)
             Robot.set_datetime(start_dt + self.discreteness)
             for robot in self.robots:
-                #try:
-                robot.trading()
-                #except Exception as e:
-                #    print(e)
+                try:
+                    robot.trading()
+                except Exception as e:
+                    print(e)
                 orders = robot.gather_orders()
                 for order in orders:
                     if self.broker.validate_order(order):
-                        trades = self.order_book.process_order(order)
+                        trades = self.matching_engine.process_order(order)
                         for trade in trades:
                             self.broker.process_trade(trade)
                 robot.reset_orders()
             start_dt += self.discreteness
         if self.save:
-            self.order_book.save_order_log('')
-            self.order_book.save_trade_log('')
+            self.matching_engine.save_order_log('')
+            self.matching_engine.save_trade_log('')
 
-    def start(self):
+    def start(self) -> NoReturn:
         self.train_robots()
         for date in self.dates:
             self.trade(date)
