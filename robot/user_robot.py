@@ -28,9 +28,6 @@ class UserRobot(User):
     def __init__(self):
         super().__init__('robot', 'robot')
 
-    def configure(self) -> NoReturn:
-        return
-
     @classmethod
     def set_datetime(cls, value: dt.datetime) -> NoReturn:
         cls.DATETIME = value

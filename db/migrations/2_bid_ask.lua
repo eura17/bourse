@@ -82,7 +82,7 @@ function delete_order(ticker,
     if order == box.NULL then
         return
     end
-    local current_volume = order[4]
+    local current_volume = order[5]
     if volume >= current_volume then
         box.space[space]:delete(order_no)
     else

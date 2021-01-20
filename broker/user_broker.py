@@ -8,13 +8,6 @@ class UserBroker(User):
     def __init__(self):
         super().__init__('broker', 'broker')
 
-    def configure(self) -> NoReturn:
-        path = f'{os.path.dirname(os.path.realpath(__file__))}\\lua'
-        lua_files = os.listdir(path)
-        for file in lua_files:
-            with open(f'{path}\\{file}', 'r', encoding='utf8') as f:
-                self._conn.eval(f.read().strip())
-
     def create_account(self, robot: str) -> NoReturn:
         self._conn.call(
             'create_account_space',

@@ -88,11 +88,16 @@ function add_to_trade_log(ticker,
 end
 
 function get_last_trade_price(ticker)
-    local all_deals = box.space['trade_log'].index.ticker:select(ticker)
-    local last_trade = all_deals[#all_deals]
-    if last_trade ~= box.NULL then
-        return last_trade[8]
+    local last_trade_n = box.space['trade_log']:len()
+    local last_trade
+    while last_trade_n > 0 do
+        last_trade = box.space['trade_log']:select(last_trade_n)[1]
+        if last_trade[2] == ticker then
+            return last_trade[8]
+        end
+        last_trade_n = last_trade_n - 1
     end
+    return box.NULL
 end
 
 function get_candles(ticker, stop_dt, ofst)

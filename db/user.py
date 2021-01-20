@@ -1,16 +1,10 @@
-from typing import NoReturn
-from abc import abstractmethod
+import tarantool
 
 from db.tarantoolconnection import TarantoolConnection
 
 
 class User(TarantoolConnection):
     def __init__(self,
-                 user: str,
-                 password: str):
-        super(User, self).__init__(user, password)
-        self.configure()
-
-    @abstractmethod
-    def configure(self) -> NoReturn:
-        pass
+                 user: str = None,
+                 password: str = None):
+        self._conn = tarantool.connect(self._HOST, self._PORT, user, password)
