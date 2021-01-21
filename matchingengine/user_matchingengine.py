@@ -1,5 +1,4 @@
 from typing import Union, NoReturn
-import os
 import datetime as dt
 
 from db import User

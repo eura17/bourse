@@ -8,6 +8,7 @@ from db.user import User
 
 class TarantoolConnection:
     __work_dir = 'tarantool_work_dir'
+    __migrations_dir = 'migrations'
 
     def __init__(self, port: int):
         self.__tarantool_subprocess = subprocess.Popen(
@@ -29,7 +30,7 @@ class TarantoolConnection:
         self.__tarantool_subprocess.kill()
 
     def __configure(self, port: int):
-        base_path = self.__get_dir()
+        base_path = self.__get_base_path()
         if self.__work_dir in os.listdir(base_path):
             shutil.rmtree(self.__work_dir)
         os.mkdir(f'{base_path}/{self.__work_dir}')
@@ -39,15 +40,15 @@ class TarantoolConnection:
 
     def __migrate(self):
         if self.__tarantool_subprocess is not None:
-            path = self.__get_dir()
+            base_path = self.__get_base_path()
+            path = f'{base_path}/{self.__migrations_dir}'
             migrations = ''
-            for file in os.listdir(f'{path}/migrations'):
-                with open(f'{path}/migrations/{file}') as f:
-                    migrations += f.read().strip()
-                    migrations += '\n\n\n'
+            for file in os.listdir(path):
+                with open(f'{path}/{file}') as f:
+                    migrations += f'{f.read().strip()}\n\n\n'
             self.__tarantool_subprocess.stdin.write(bytes(migrations,
                                                           encoding='utf-8'))
 
     @staticmethod
-    def __get_dir():
+    def __get_base_path():
         return os.path.dirname(os.path.realpath(__file__))
