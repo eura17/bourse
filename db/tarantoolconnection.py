@@ -3,6 +3,8 @@ import shutil
 import subprocess
 from time import sleep
 
+import tarantool
+
 from db.user import User
 
 
@@ -39,16 +41,30 @@ class TarantoolConnection:
         self.__tarantool_subprocess.stdin.write(bytes(cfg, encoding='utf-8'))
 
     def __migrate(self):
-        if self.__tarantool_subprocess is not None:
-            base_path = self.__get_base_path()
-            path = f'{base_path}/{self.__migrations_dir}'
-            migrations = ''
-            for file in os.listdir(path):
-                with open(f'{path}/{file}') as f:
-                    migrations += f'{f.read().strip()}\n\n\n'
-            self.__tarantool_subprocess.stdin.write(bytes(migrations,
-                                                          encoding='utf-8'))
+        migrations = f'{self.__get_base_path()}/{self.__migrations_dir}'
+        for file in os.listdir(migrations):
+            with open(f'{migrations}/{file}') as f:
+                self.__tarantool_subprocess.stdin.write(
+                    bytes(
+                        f'{f.read().strip()}\n',
+                        encoding='utf-8'
+                    )
+                )
 
     @staticmethod
     def __get_base_path():
         return os.path.dirname(os.path.realpath(__file__))
+
+    @classmethod
+    def migrate(cls,
+                host: str,
+                port: int,
+                user: str = 'admin',
+                password: str = 'admin'):
+        admin = tarantool.connect(host, port, user, password)
+        migrations = f'{cls.__get_base_path()}/{cls.__migrations_dir}'
+        for file in os.listdir(migrations):
+            with open(f'{migrations}/{file}') as f:
+                admin.eval(f.read().strip())
+        User.set_host(host)
+        User.set_port(port)

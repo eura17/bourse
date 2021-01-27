@@ -68,14 +68,14 @@ function create_trade_log_space()
     )
 end
 
-function add_to_trade_log(ticker,
-                          datetime,
-                          buy_order_no,
-                          buyer_robot,
-                          sell_order_no,
-                          seller_robot,
-                          price,
-                          volume)
+function add_trade_to_trade_log(ticker,
+                                datetime,
+                                buy_order_no,
+                                buyer_robot,
+                                sell_order_no,
+                                seller_robot,
+                                price,
+                                volume)
     box.space['trade_log']:insert({nil,
                                    ticker,
                                    datetime,
@@ -87,7 +87,7 @@ function add_to_trade_log(ticker,
                                    volume})
 end
 
-function get_last_trade_price(ticker)
+function get_last_trade_price_from_trade_log(ticker)
     local last_trade_n = box.space['trade_log']:len()
     local last_trade
     while last_trade_n > 0 do
@@ -100,8 +100,8 @@ function get_last_trade_price(ticker)
     return box.NULL
 end
 
-function get_candles(ticker, stop_dt, ofst)
-    local all_trades = box.space['trade_log'].index.datetime:select(stop_dt, {iterator='GE'})[1]
+function get_candles_from_trade_log(ticker, stop_dt, ofst)
+    local all_trades = box.space['trade_log'].index.datetime:select(stop_dt, {iterator='GE'})
     local candles = {}
     local t, dt, price, vol
     local open, high, low, close, volume = box.NULL, box.NULL, box.NULL, box.NULL, 0
@@ -123,13 +123,13 @@ function get_candles(ticker, stop_dt, ofst)
             if close == box.NULL then
                 close = price
             end
-            if stop_dt <= dt and dt <= stop_dt + ofst then
-                if price > high then
+            if price > high then
                     high = price
                 end
                 if price < low then
                     low = price
                 end
+            if stop_dt <= dt and dt <= stop_dt + ofst then
                 volume = volume + vol
             elseif i == #all_trades then
                 close = price

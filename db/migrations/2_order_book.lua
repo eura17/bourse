@@ -1,4 +1,4 @@
-function create_bid_ask_spaces(ticker)
+function create_order_book_spaces(ticker)
     local bid_ask = {'bid', 'ask'}
     for _, value in pairs(bid_ask) do
         local space = value..'_'..ticker
@@ -48,14 +48,14 @@ function create_bid_ask_spaces(ticker)
     end
 end
 
-function add_order(ticker,
-                   operation,
-                   order_no,
-                   real_order_no,
-                   datetime,
-                   price,
-                   volume,
-                   robot)
+function add_order_to_order_book(ticker,
+                                 operation,
+                                 order_no,
+                                 real_order_no,
+                                 datetime,
+                                 price,
+                                 volume,
+                                 robot)
     local space = (operation == 'buy' and 'bid' or operation == 'sell' and 'ask')..'_'..ticker
     box.space[space]:insert{order_no,
                             real_order_no,
@@ -65,18 +65,22 @@ function add_order(ticker,
                             robot}
 end
 
-function update_order(ticker,
-                      operation,
-                      order_no,
-                      volume)
+function update_order_in_order_book(ticker,
+                                    operation,
+                                    order_no,
+                                    volume)
     local space = (operation == 'buy' and 'bid' or operation == 'sell' and 'ask')..'_'..ticker
-    box.space[space]:update(order_no, {{'=', 'volume', volume}})
+    if volume == 0 then
+        box.space[space]:delete(order_no)
+    else
+        box.space[space]:update(order_no, {{'=', 'volume', volume}})
+    end
 end
 
-function delete_order(ticker,
-                      operation,
-                      order_no,
-                      volume)
+function delete_order_from_order_book(ticker,
+                                      operation,
+                                      order_no,
+                                      volume)
     local space = (operation == 'buy' and 'bid' or operation == 'sell' and 'ask')..'_'..ticker
     local order = box.space[space]:select(order_no)[1]
     if order == box.NULL then
@@ -90,12 +94,23 @@ function delete_order(ticker,
     end
 end
 
-function counter_orders_exist(ticker, operation)
+function is_counter_orders_exist_in_order_book(ticker,
+                                               operation)
     local space = (operation == 'buy' and 'ask' or operation == 'sell' and 'bid')..'_'..ticker
     return box.space[space]:len() > 0
 end
 
-function min_ask_price(ticker)
+function is_order_intersects_order_book(ticker,
+                                        operation,
+                                        price)
+    if operation == 'buy' then
+        return get_min_ask_price_from_order_book(ticker) <= price
+    elseif operation == 'sell' then
+        return get_max_bid_price_from_order_book(ticker) >= price
+    end
+end
+
+function get_min_ask_price_from_order_book(ticker)
     local min_ask = box.space['ask_'..ticker].index.price:min()
     if min_ask ~= box.NULL then
         return min_ask[4]
@@ -104,8 +119,8 @@ function min_ask_price(ticker)
     end
 end
 
-function min_ask_order(ticker)
-    local min_ask = min_ask_price(ticker)
+function get_min_ask_order_from_order_book(ticker)
+    local min_ask = get_min_ask_price_from_order_book(ticker)
     if min_ask ~= box.NULL then
         min_ask = box.space['ask_'..ticker].index.price:select(min_ask, {limit=1})[1]
     else
@@ -129,7 +144,7 @@ function min_ask_order(ticker)
     end
 end
 
-function max_bid_price(ticker)
+function get_max_bid_price_from_order_book(ticker)
     local max_bid = box.space['bid_'..ticker].index.price:max()
     if max_bid ~= box.NULL then
         return max_bid[4]
@@ -138,8 +153,8 @@ function max_bid_price(ticker)
     end
 end
 
-function max_bid_order(ticker)
-    local max_bid = max_bid_price(ticker)
+function get_max_bid_order_from_order_book(ticker)
+    local max_bid = get_max_bid_price_from_order_book(ticker)
     if max_bid ~= box.NULL then
         max_bid = box.space['bid_'..ticker].index.price:select(max_bid, {limit = 1})[1]
     else
@@ -161,7 +176,7 @@ function max_bid_order(ticker)
     end
 end
 
-function get_active_orders(robot, ticker, operation)
+function get_active_orders_from_order_book(robot, ticker, operation)
     local raw_orders = {buy = {}, sell = {}}
     if operation == 'buy' then
         local bids = box.space['bid_'..ticker].index.robot:select(robot)[1]
@@ -205,21 +220,21 @@ function get_active_orders(robot, ticker, operation)
 end
 
 function get_order_book(ticker)
-    local raw_bids = box.space['bid_'..ticker]:select()[1]
+    local raw_bids = box.space['bid_'..ticker]:select()
     local bids = {}
     for _, val in pairs(raw_bids) do
-        local price = val[3]
-        local volume = val[4]
+        local price = val[4]
+        local volume = val[5]
         if bids[price] == nil then
             bids[price] = 0
         end
         bids[price] = bids[price] + volume
     end
-    local raw_asks = box.space['ask_'..ticker]:select()[1]
+    local raw_asks = box.space['ask_'..ticker]:select()
     local asks = {}
     for _, val in pairs(raw_asks) do
-        local price = val[3]
-        local volume = val[4]
+        local price = val[4]
+        local volume = val[5]
         if asks[price] == nil then
             asks[price] = 0
         end

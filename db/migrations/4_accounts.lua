@@ -75,7 +75,7 @@ function change_asset_in_account(robot,
                              {'=', 'volume', volume}})
 end
 
-function calculate_liquidation_cost(robot)
+function get_liquidation_cost_for_account(robot)
     local assets = get_all_assets_from_account(robot)
     local liquidation_cost = 0
     local price, volume
@@ -84,6 +84,15 @@ function calculate_liquidation_cost(robot)
             price = 1
         else
             price = get_last_trade_price(asset)
+            if price == box.NULL then
+                local min_ask = get_min_ask_price_from_order_book(asset)
+                local max_bid = get_max_bid_price_from_order_book(asset)
+                if min_ask == box.NULL or max_bid == box.NULL then
+                    price = pv[1]
+                else
+                    price = (min_ask + max_bid) / 2
+                end
+            end
         end
         volume = pv[2]
         liquidation_cost = liquidation_cost + price * volume

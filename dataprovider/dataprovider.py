@@ -2,11 +2,14 @@ from typing import Iterable, NoReturn
 from abc import abstractmethod
 import datetime as dt
 
-from dataprovider.user_dataprovider import UserDataProvider
-from matchingengine import Order
+from db import User
+from db.dataclasses import Order
 
 
-class DataProvider(UserDataProvider):
+class DataProvider(User):
+    def __init__(self):
+        super().__init__('data_provider', 'data_provider')
+
     @abstractmethod
     def get_dates(self) -> Iterable[dt.date]:
         pass

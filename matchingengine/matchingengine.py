@@ -1,77 +1,81 @@
-from typing import Iterable
+from typing import NoReturn, Iterable, Union
+from abc import abstractmethod
 
-from matchingengine.user_matchingengine import UserMatchingEngine
-from matchingengine.ordertrademixin import OrderTradeMixin
-from matchingengine.order import Order
-from matchingengine.trade import Trade
+from db import User
+from db.dataclasses import Order, Trade
 
 
-class MatchingEngine(UserMatchingEngine):
+class MatchingEngine(User):
     __slots__ = []
 
     def __init__(self,
-                 tickers: Iterable[str],
-                 robots: Iterable[str]):
-        super().__init__()
-        OrderTradeMixin.set_tickers(tickers)
-        OrderTradeMixin.set_robots(robots)
+                 tickers: Iterable[str]):
+        super().__init__('matching_engine', 'matching_engine')
+        self._set_tickers(tickers)
         for ticker in tickers:
-            self.create_bid_ask_spaces(ticker)
+            self._create_order_book_spaces(ticker)
 
-    def process_order(self, order: Order) -> [Trade]:
-        self.add_to_order_log(order)
+    def process_order(self, order: Order) -> list[Trade]:
+        self.save_order(order)
         if order.is_to_delete():
-            self.delete_order(order)
-            return []
+            return self.execute_delete_order(order)
         elif order.is_market():
-            return self.execute_market_order(order)
+            trades = self.execute_market_order(order)
+            for trade in trades:
+                self.save_trade(trade)
+            return trades
         elif order.is_limit():
-            return self.execute_limit_order(order)
+            trades = self.execute_limit_order(order)
+            for trade in trades:
+                self.save_trade(trade)
+            return trades
 
-    def execute_market_order(self, order: Order) -> [Trade]:
-        trades = []
-        while not order.is_executed() and \
-                self.counter_orders_exist(order):
-            trades.append(self.match_with_first_best_counter_order(order))
-        return trades
+    @abstractmethod
+    def execute_delete_order(self, order: Order) -> list[Trade]: ...
 
-    def execute_limit_order(self, order: Order) -> [Trade]:
-        trades = []
-        while not order.is_executed() and \
-                self.counter_orders_exist(order) and \
-                self.order_intersect(order):
-            trades.append(self.match_with_first_best_counter_order(order))
-        if not order.is_executed():
-            self.add_order(order)
-        return trades
+    @abstractmethod
+    def execute_market_order(self, order: Order) -> list[Trade]: ...
 
-    def order_intersect(self, order: Order) -> bool:
-        return (order.is_buy() and
-                self.min_ask_price(order.ticker) <= order.price) or \
-               (order.is_sell() and
-                self.max_bid_price(order.ticker) >= order.price)
+    @abstractmethod
+    def execute_limit_order(self, order: Order) -> list[Trade]: ...
 
-    def match_with_first_best_counter_order(self, order: Order) -> Trade:
-        to_buy = order.is_buy()
-        counter_order = self.min_ask_order(order.ticker) if to_buy \
-            else self.max_bid_order(order.ticker)
-        execution_price = counter_order.price
-        execution_volume = min(order.volume, counter_order.volume)
-        order.execute(execution_volume)
-        if counter_order.volume == execution_volume:
-            self.delete_order(counter_order)
-        else:
-            counter_order.execute(execution_volume)
-            self.update_order(counter_order)
-        trade = Trade(
-            order.ticker,
-            order.datetime,
-            order.order_no if to_buy else counter_order.order_no,
-            order.robot if to_buy else counter_order.robot,
-            counter_order.order_no if to_buy else order.order_no,
-            counter_order.robot if to_buy else order.robot,
-            execution_price,
-            execution_volume
-        )
-        self.add_to_trade_log(trade)
-        return trade
+    def create_tables(self) -> NoReturn:
+        self._create_order_log_space()
+        self._create_trade_log_space()
+
+    def save_order(self, order: Order):
+        self._add_order_to_order_log(order)
+
+    def save_trade(self, trade: Trade):
+        self._add_trade_to_trade_log(trade)
+
+    def save_tables(self, path: str) -> NoReturn:
+        self._save_order_log(path)
+        self._save_trade_log(path)
+
+    def add_order(self, order: Order) -> NoReturn:
+        self._add_order_to_order_book(order)
+
+    def update_order(self, order: Order) -> NoReturn:
+        self._update_order_in_order_book(order)
+
+    def delete_order(self, order: Order) -> NoReturn:
+        self._delete_order_from_order_book(order)
+
+    def max_bid_price(self, ticker: str) -> Union[int, float]:
+        return self._get_max_bid_price_from_order_book(ticker)
+
+    def min_ask_price(self, ticker: str) -> Union[int, float]:
+        return self._get_min_ask_price_from_order_book(ticker)
+
+    def max_bid_order(self, ticker: str) -> Order:
+        return self._get_max_bid_order_from_order_book(ticker)
+
+    def min_ask_order(self, ticker: str) -> Order:
+        return self._get_min_ask_order_from_order_book(ticker)
+
+    def counter_orders_exist(self, order: Order) -> bool:
+        return self._is_counter_orders_exist_in_order_book(order)
+
+    def order_intersects(self, order: Order) -> bool:
+        return self._is_order_intersects_order_book(order)

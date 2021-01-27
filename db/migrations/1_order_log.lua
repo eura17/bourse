@@ -62,17 +62,17 @@ function create_order_log_space()
     )
 end
 
-function add_to_order_log(order_no,
-                          real_order_no,
-                          sec_code,
-                          operation,
-                          type,
-                          datetime,
-                          action,
-                          price,
-                          volume,
-                          robot)
-    if action == 'delete' then
+function add_order_to_order_log(order_no,
+                                real_order_no,
+                                sec_code,
+                                operation,
+                                type,
+                                datetime,
+                                action,
+                                price,
+                                volume,
+                                robot)
+    if action == 'del' then
         if real_order_no ~= box.NULL then
             order_no = box.space['order_log'].index.real_order_no:select(real_order_no)[1][2]
         end

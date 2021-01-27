@@ -2,7 +2,7 @@ from typing import NoReturn, Iterable
 import datetime as dt
 
 from dataprovider.dataprovider import DataProvider
-from matchingengine import Order
+from db.dataclasses import Order
 
 
 class DefaultDataProvider(DataProvider):
@@ -95,7 +95,7 @@ class DefaultDataProvider(DataProvider):
                 'buy' if operation == 'B' else 'sell',
                 'market' if price == 0 else 'limit',
                 datetime,
-                'set' if action == '1' else 'delete',
+                'set' if action == '1' else 'del',
                 price,
                 volume
             )

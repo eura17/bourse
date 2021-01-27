@@ -1,78 +1,18 @@
 from typing import Union, NoReturn, Iterable
-from collections import defaultdict
+from abc import abstractmethod
 
-from broker.user_broker import UserBroker
-from matchingengine import Trade
-from matchingengine import Order
+from db import User
+from db.dataclasses import Order, Trade
 
 
-class Broker(UserBroker):
-    _DEFAULT_START_ACCOUNT = 100_000
-    _DEFAULT_LEVERAGE = 1
-    _DEFAULT_COMMISSION_ABS = 0
-    _DEFAULT_COMMISSION_PCT = 0
-
+class Broker(User):
     def __init__(self,
-                 robots: Iterable[str],
-                 tickers: Iterable[str],
-                 accounts_settings: dict[str,
-                                         dict[str,
-                                              Union[int, float]]] = None):
-        super().__init__()
-        accounts_settings = accounts_settings or {}
-        self.accounts_settings = defaultdict(dict)
-        for robot in robots:
-            self.accounts_settings[robot]['start_account'] = \
-                accounts_settings.get(robot, dict()).get(
-                    'start_account',
-                    self._DEFAULT_START_ACCOUNT
-                )
-            self.accounts_settings[robot]['leverage'] = \
-                accounts_settings.get(robot, {}).get(
-                    'leverage',
-                    self._DEFAULT_LEVERAGE
-                )
-            self.accounts_settings[robot]['commission_abs'] = \
-                accounts_settings.get(robot, {}).get(
-                    'commission_abs',
-                    self._DEFAULT_COMMISSION_ABS
-                )
-            self.accounts_settings[robot]['commission_pct'] = \
-                accounts_settings.get(robot, {}).get(
-                    'commission_pct',
-                    self._DEFAULT_COMMISSION_PCT
-                )
-            self.open_account(robot,
-                              tickers)
+                 robots: Iterable[str]):
+        super().__init__('broker', 'broker')
+        self._set_robots(robots)
 
-    def open_account(self,
-                     robot: str,
-                     tickers: Iterable[str]) -> NoReturn:
-        self.create_account(robot)
-        self.add_asset(robot, 'CASH', 1,
-                       self.accounts_settings[robot]['start_account'])
-        for ticker in tickers:
-            self.add_asset(robot, ticker)
-
-    def validate_order(self, order: Order) -> bool:
-        _, cash = self.get_asset(order.robot, 'CASH')
-        to_buy = order.is_buy()
-        sign = (-1) ** to_buy
-        execution_price = order.price
-        if order.is_market():
-            execution_price = self.last_trade_price(order.ticker)
-            if execution_price is None:
-                max_bid = self.max_bid_price(order.ticker)
-                min_ask = self.min_ask_price(order.ticker)
-                if max_bid is None or min_ask is None:
-                    return False
-                execution_price = (max_bid + min_ask) / 2
-            execution_price *= 1.01 if to_buy \
-                else 0.99
-        trade_cost = execution_price * order.volume * sign - \
-            self.commission(order.robot, execution_price, order.volume)
-        min_limit, max_limit = self.cash_limits(order.robot)
-        return min_limit < cash + trade_cost < max_limit
+    @abstractmethod
+    def validate_order(self, order: Order) -> bool: ...
 
     def process_trade(self, trade: Trade) -> NoReturn:
         if trade.buyer_robot is not None:
@@ -80,62 +20,42 @@ class Broker(UserBroker):
         if trade.seller_robot is not None:
             self.register_trade(trade.seller_robot, trade)
 
-    def register_trade(self,
-                       robot: str,
-                       trade: Trade) -> NoReturn:
-        self.accrue_asset(robot, trade)
-        self.accrue_cash(robot, trade)
+    @abstractmethod
+    def register_trade(self, robot: str, trade: Trade) -> NoReturn: ...
 
-    def accrue_asset(self,
+    def create_account(self, robot: str) -> NoReturn:
+        self._create_account_space(robot)
+
+    def add_asset(self,
+                  robot: str,
+                  asset: str,
+                  price: Union[int, float] = None,
+                  volume: Union[int, float] = None) -> NoReturn:
+        self._add_asset_to_account(robot, asset, price, volume)
+
+    def get_asset(self,
+                  robot: str,
+                  asset: str) -> list[int, float]:
+        return self._get_asset_from_account(robot, asset)
+
+    def get_all_assets(self, robot: str) -> dict[str, tuple[int, float]]:
+        return self._get_all_assets_from_account(robot)
+
+    def change_asset(self,
                      robot: str,
-                     trade: Trade) -> NoReturn:
-        cnp, cnv = self.get_asset(robot, trade.ticker)
-        sign = (-1) ** (trade.seller_robot == robot)
-        dvol = trade.volume * sign
-        if cnv * dvol == 0:
-            price, volume = trade.price, dvol
-        elif cnv * dvol > 0:
-            price, volume = self.avco(cnp, cnv, trade.price, trade.volume)
-        else:
-            total_volume = cnv + dvol
-            if cnv * total_volume == 0:
-                price, volume = 0, 0
-            elif cnv * total_volume > 0:
-                price, volume = cnp, total_volume
-            else:
-                price, volume = trade.price, total_volume
-        self.change_asset(robot, trade.ticker, price, volume)
+                     asset: str,
+                     price: Union[int, float] = None,
+                     volume: Union[int, float] = None) -> NoReturn:
+        self._change_asset_in_account(robot, asset, price, volume)
 
-    @staticmethod
-    def avco(price0: Union[int, float],
-             volume0: int,
-             price1: Union[int, float],
-             volume1: int) -> tuple[float, int]:
-        vol = volume0 + volume1
-        avco = price0 * (volume0 / vol) + price1 * (volume1 / vol)
-        return avco, vol
+    def liquidation_cost(self, robot: str) -> Union[int, float]:
+        return self._get_liquidation_cost_for_account(robot)
 
-    def accrue_cash(self,
-                    robot: str,
-                    trade: Trade) -> NoReturn:
-        _, cash = self.get_asset(robot, 'CASH')
-        sign = (-1) ** (trade.buyer_robot == robot)
-        trade_cost = trade.price * trade.volume * sign - \
-            self.commission(robot, trade.price, trade.volume)
-        self.change_asset(robot, 'CASH', 1, cash + trade_cost)
+    def last_trade_price(self, ticker: str) -> Union[int, float, None]:
+        return self._get_last_trade_price_from_trade_log(ticker)
 
-    def commission(self,
-                   robot: str,
-                   price: Union[int, float],
-                   volume: Union[int, float]) -> Union[int, float]:
-        raw_trade_cost = price * volume
-        commission_pct = raw_trade_cost * \
-            self.accounts_settings[robot]['commission_pct']
-        commission_abs = self.accounts_settings[robot]['commission_abs']
-        return commission_pct + commission_abs
+    def max_bid_price(self, ticker: str) -> Union[int, float, None]:
+        return self._get_max_bid_price_from_order_book(ticker)
 
-    def cash_limits(self, robot: str) -> tuple[int, float]:
-        liq_cost = self.liquidation_cost(robot)
-        min_limit = liq_cost * (1 - self.accounts_settings[robot]['leverage'])
-        max_limit = liq_cost * (1 + self.accounts_settings[robot]['leverage'])
-        return min_limit, max_limit
+    def min_ask_price(self, ticker: str) -> Union[int, float, None]:
+        return self._get_min_ask_price_from_order_book(ticker)

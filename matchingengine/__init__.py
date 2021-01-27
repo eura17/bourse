@@ -1,3 +1,2 @@
-from matchingengine.order import Order
 from matchingengine.matchingengine import MatchingEngine
-from matchingengine.trade import Trade
+from matchingengine.defaultmatchingengine import DefaultMatchingEngine
