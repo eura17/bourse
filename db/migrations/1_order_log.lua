@@ -1,3 +1,5 @@
+box.schema.func.create('create_order_log_space')
+box.schema.user.grant('matching_engine', 'execute', 'function', 'create_order_log_space')
 function create_order_log_space()
     if box.space['order_log'] ~= box.NULL then
         box.space['order_log']:drop()
@@ -62,6 +64,8 @@ function create_order_log_space()
     )
 end
 
+box.schema.func.create('add_order_to_order_log')
+box.schema.user.grant('matching_engine', 'execute', 'function', 'add_order_to_order_log')
 function add_order_to_order_log(order_no,
                                 real_order_no,
                                 sec_code,
@@ -92,4 +96,10 @@ function add_order_to_order_log(order_no,
                                    volume,
                                    robot})
     return order_no
+end
+
+box.schema.func.create('get_all_orders_from_order_log')
+box.schema.user.grant('matching_engine', 'execute', 'function', 'get_all_orders_from_order_log')
+function get_all_orders_from_order_log()
+    return box.space['order_log']:select()
 end

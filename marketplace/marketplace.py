@@ -69,7 +69,7 @@ class MarketPlace:
                 robot.reset()
             start_dt += self.discreteness
         if self.save_path:
-            self.matching_engine.save_tables(self.save_path)
+            self.matching_engine.save_tables(self.save_path, date)
 
     def start(self) -> NoReturn:
         self.train_robots()

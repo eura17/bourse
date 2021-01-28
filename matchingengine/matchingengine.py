@@ -1,4 +1,5 @@
 from typing import NoReturn, Iterable, Union
+import datetime as dt
 from abc import abstractmethod
 
 from db import User
@@ -49,9 +50,11 @@ class MatchingEngine(User):
     def save_trade(self, trade: Trade):
         self._add_trade_to_trade_log(trade)
 
-    def save_tables(self, path: str) -> NoReturn:
-        self._save_order_log(path)
-        self._save_trade_log(path)
+    def save_tables(self,
+                    path: str,
+                    date: dt.date) -> NoReturn:
+        self._save_order_log(path, date)
+        self._save_trade_log(path, date)
 
     def add_order(self, order: Order) -> NoReturn:
         self._add_order_to_order_book(order)

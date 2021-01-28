@@ -1,3 +1,5 @@
+box.schema.func.create('create_account_space')
+box.schema.user.grant('broker', 'execute', 'function', 'create_account_space')
 function create_account_space(robot)
     local space = 'account_'..robot
     if box.space[space] ~= box.NULL then
@@ -37,8 +39,11 @@ function create_account_space(robot)
                 if_not_exists = true
             }
     )
+    box.schema.user.grant('robot', 'read', 'space', space)
 end
 
+box.schema.func.create('add_asset_to_account')
+box.schema.user.grant('broker', 'execute', 'function', 'add_asset_to_account')
 function add_asset_to_account(robot,
                               asset,
                               price,
@@ -49,12 +54,18 @@ function add_asset_to_account(robot,
                                          volume})
 end
 
+box.schema.func.create('get_asset_from_account')
+box.schema.user.grant('broker', 'execute', 'function', 'get_asset_from_account')
+box.schema.user.grant('robot', 'execute', 'function', 'get_asset_from_account')
 function get_asset_from_account(robot,
                                 asset)
     local rec = box.space['account_'..robot].index.asset:select(asset)[1]
     return {rec[3], rec[4]}
 end
 
+box.schema.func.create('get_all_assets_from_account')
+box.schema.user.grant('broker', 'execute', 'function', 'get_all_assets_from_account')
+box.schema.user.grant('robot', 'execute', 'function', 'get_all_assets_from_account')
 function get_all_assets_from_account(robot)
     local rec = box.space['account_'..robot]:select()
     local assets = {}
@@ -64,6 +75,8 @@ function get_all_assets_from_account(robot)
     return assets
 end
 
+box.schema.func.create('change_asset_in_account')
+box.schema.user.grant('broker', 'execute', 'function', 'change_asset_in_account')
 function change_asset_in_account(robot,
                                  asset,
                                  price,
@@ -75,6 +88,9 @@ function change_asset_in_account(robot,
                              {'=', 'volume', volume}})
 end
 
+box.schema.func.create('get_liquidation_cost_for_account')
+box.schema.user.grant('broker', 'execute', 'function', 'get_liquidation_cost_for_account')
+box.schema.user.grant('robot', 'execute', 'function', 'get_liquidation_cost_for_account')
 function get_liquidation_cost_for_account(robot)
     local assets = get_all_assets_from_account(robot)
     local liquidation_cost = 0

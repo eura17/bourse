@@ -1,4 +1,4 @@
-from typing import NoReturn, Union
+from typing import Union
 from abc import ABC
 import datetime as dt
 
@@ -38,11 +38,11 @@ class User(ABC):
         )
 
     @classmethod
-    def set_host(cls, value: str) -> NoReturn:
+    def set_host(cls, value: str) -> None:
         cls.__HOST = value
 
     @classmethod
-    def set_port(cls, value: int) -> NoReturn:
+    def set_port(cls, value: int) -> None:
         cls.__PORT = value
 
     @staticmethod
@@ -53,12 +53,12 @@ class User(ABC):
     def _set_robots(robots):
         OrderTradeMixin.set_robots(robots)
 
-    def _create_order_log_space(self) -> NoReturn:
+    def _create_order_log_space(self) -> None:
         self.__conn.call(
             'create_order_log_space'
         )
 
-    def _add_order_to_order_log(self, order: Order) -> NoReturn:
+    def _add_order_to_order_log(self, order: Order) -> None:
         order_no = self.__conn.call(
             'add_order_to_order_log',
             (order.order_no,
@@ -74,16 +74,35 @@ class User(ABC):
         )[0]
         order.set_order_no(order_no)
 
-    def _save_order_log(self, path: str) -> NoReturn:
-        ...
+    def _save_order_log(self,
+                        path: str,
+                        date: dt.date) -> None:
+        header = 'no,' \
+                 'order_no,\
+                 real_order_no,' \
+                 'ticker,' \
+                 'operation,' \
+                 'type,' \
+                 'datetime,' \
+                 'action,price,' \
+                 'volume,' \
+                 'robot'
+        orders = self.__conn.call(
+            'get_all_orders_from_order_log'
+        )[0]
+        fmt_date = f'{date.year}_{date.month}_{date.day}'
+        with open(f'{path}/order_log_{fmt_date}.csv', 'w') as f:
+            print(header, file=f)
+            for order in orders:
+                print(*order, sep=',', file=f)
 
-    def _create_order_book_spaces(self, ticker: str) -> NoReturn:
+    def _create_order_book_spaces(self, ticker: str) -> None:
         self.__conn.call(
             'create_order_book_spaces',
             (ticker,)
         )
 
-    def _add_order_to_order_book(self, order: Order) -> NoReturn:
+    def _add_order_to_order_book(self, order: Order) -> None:
         self.__conn.call(
             'add_order_to_order_book',
             (order.ticker,
@@ -96,13 +115,13 @@ class User(ABC):
              order.robot)
         )
 
-    def _update_order_in_order_book(self, order: Order) -> NoReturn:
+    def _update_order_in_order_book(self, order: Order) -> None:
         self.__conn.call(
             'update_order_in_order_book',
             (order.ticker, order.operation, order.order_no, order.volume)
         )
 
-    def _delete_order_from_order_book(self, order: Order) -> NoReturn:
+    def _delete_order_from_order_book(self, order: Order) -> None:
         self.__conn.call(
             'delete_order_from_order_book',
             (order.ticker, order.operation, order.order_no, order.volume)
@@ -213,13 +232,13 @@ class User(ABC):
         }
         return order_book
 
-    def _create_trade_log_space(self) -> NoReturn:
+    def _create_trade_log_space(self) -> None:
         self.__conn.call(
             'create_trade_log_space'
         )
 
     def _add_trade_to_trade_log(self,
-                                trade: Trade) -> NoReturn:
+                                trade: Trade) -> None:
         self.__conn.call(
             'add_trade_to_trade_log',
             (trade.ticker,
@@ -232,8 +251,26 @@ class User(ABC):
              trade.volume)
         )
 
-    def _save_trade_log(self, path: str) -> NoReturn:
-        ...
+    def _save_trade_log(self,
+                        path: str,
+                        date: dt.date) -> None:
+        header = 'trade_no,' \
+                 'ticker,' \
+                 'datetime,' \
+                 'buy_order_no,' \
+                 'buyer_robot,' \
+                 'sell_order_no,' \
+                 'seller_robot,' \
+                 'price,' \
+                 'volume'
+        trades = self.__conn.call(
+            'get_all_trades_from_trade_log'
+        )[0]
+        fmt_date = f'{date.year}_{date.month}_{date.day}'
+        with open(f'{path}/trade_log_{fmt_date}.csv', 'w') as f:
+            print(header, file=f)
+            for trade in trades:
+                print(*trade, sep=',', file=f)
 
     def _get_last_trade_price_from_trade_log(self, ticker: str) \
             -> Union[int, float, None]:
@@ -269,7 +306,7 @@ class User(ABC):
             candles.append(Candle(*raw_candle))
         return candles
 
-    def _create_account_space(self, robot: str) -> NoReturn:
+    def _create_account_space(self, robot: str) -> None:
         self.__conn.call(
             'create_account_space',
             (robot,)
@@ -307,7 +344,7 @@ class User(ABC):
                                  robot: str,
                                  asset: str,
                                  price: Union[int, float],
-                                 volume: int) -> NoReturn:
+                                 volume: int) -> None:
         self.__conn.call(
             'change_asset_in_account',
             (robot, asset, price, volume)

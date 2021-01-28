@@ -30,19 +30,20 @@ class TarantoolConnection:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.__tarantool_subprocess.kill()
+        shutil.rmtree(f'{self.__get_base_path()}/{self.__work_dir}')
 
     def __configure(self, port: int):
         base_path = self.__get_base_path()
+        working_path = f'{base_path}/{self.__work_dir}'
         if self.__work_dir in os.listdir(base_path):
-            shutil.rmtree(self.__work_dir)
-        os.mkdir(f'{base_path}/{self.__work_dir}')
-        path = f'{base_path}/{self.__work_dir}'
-        cfg = f'box.cfg{{listen={port}, work_dir="{path}"}}'
+            shutil.rmtree(working_path)
+        os.mkdir(working_path)
+        cfg = f'box.cfg{{listen={port}, work_dir="{working_path}"}}'
         self.__tarantool_subprocess.stdin.write(bytes(cfg, encoding='utf-8'))
 
     def __migrate(self):
         migrations = f'{self.__get_base_path()}/{self.__migrations_dir}'
-        for file in os.listdir(migrations):
+        for file in sorted(os.listdir(migrations)):
             with open(f'{migrations}/{file}') as f:
                 self.__tarantool_subprocess.stdin.write(
                     bytes(
@@ -63,7 +64,7 @@ class TarantoolConnection:
                 password: str = 'admin'):
         admin = tarantool.connect(host, port, user, password)
         migrations = f'{cls.__get_base_path()}/{cls.__migrations_dir}'
-        for file in os.listdir(migrations):
+        for file in sorted(os.listdir(migrations)):
             with open(f'{migrations}/{file}') as f:
                 admin.eval(f.read().strip())
         User.set_host(host)

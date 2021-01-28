@@ -1,3 +1,5 @@
+box.schema.func.create('create_trade_log_space')
+box.schema.user.grant('matching_engine', 'execute', 'function', 'create_trade_log_space')
 function create_trade_log_space()
     if box.space['trade_log'] ~= box.NULL then
         box.space['trade_log']:drop()
@@ -66,8 +68,12 @@ function create_trade_log_space()
                 if_not_exists = true
             }
     )
+    box.schema.user.grant('broker', 'read', 'space', 'trade_log')
+    box.schema.user.grant('robot', 'read', 'space', 'trade_log')
 end
 
+box.schema.func.create('add_trade_to_trade_log')
+box.schema.user.grant('matching_engine', 'execute', 'function', 'add_trade_to_trade_log')
 function add_trade_to_trade_log(ticker,
                                 datetime,
                                 buy_order_no,
@@ -87,6 +93,10 @@ function add_trade_to_trade_log(ticker,
                                    volume})
 end
 
+box.schema.func.create('get_last_trade_price_from_trade_log')
+box.schema.user.grant('matching_engine', 'execute', 'function', 'get_last_trade_price_from_trade_log')
+box.schema.user.grant('broker', 'execute', 'function', 'get_last_trade_price_from_trade_log')
+box.schema.user.grant('robot', 'execute', 'function', 'get_last_trade_price_from_trade_log')
 function get_last_trade_price_from_trade_log(ticker)
     local last_trade_n = box.space['trade_log']:len()
     local last_trade
@@ -100,6 +110,8 @@ function get_last_trade_price_from_trade_log(ticker)
     return box.NULL
 end
 
+box.schema.func.create('get_candles_from_trade_log')
+box.schema.user.grant('robot', 'execute', 'function', 'get_candles_from_trade_log')
 function get_candles_from_trade_log(ticker, stop_dt, ofst)
     local all_trades = box.space['trade_log'].index.datetime:select(stop_dt, {iterator='GE'})
     local candles = {}
@@ -146,4 +158,10 @@ function get_candles_from_trade_log(ticker, stop_dt, ofst)
         end
     end
     return candles
+end
+
+box.schema.func.create('get_all_trades_from_order_log')
+box.schema.user.grant('matching_engine', 'execute', 'function', 'get_all_trades_from_order_log')
+function get_all_trades_from_trade_log()
+    return box.space['trade_log']:select()
 end
