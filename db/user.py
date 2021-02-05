@@ -13,6 +13,8 @@ class User(ABC):
     __HOST = None
     __PORT = None
 
+    __CHUNK_SIZE = 100_000
+
     __TIMEFRAMES = {
         '1m': dt.timedelta(seconds=1),
         '2m': dt.timedelta(seconds=2),
@@ -77,24 +79,31 @@ class User(ABC):
     def _save_order_log(self,
                         path: str,
                         date: dt.date) -> None:
-        header = 'no,' \
-                 'order_no,\
-                 real_order_no,' \
-                 'ticker,' \
-                 'operation,' \
-                 'type,' \
-                 'datetime,' \
-                 'action,price,' \
-                 'volume,' \
-                 'robot'
-        orders = self.__conn.call(
-            'get_all_orders_from_order_log'
+        headers = 'no,' \
+                  'order_no,' \
+                  'real_order_no,' \
+                  'ticker,' \
+                  'operation,' \
+                  'type,' \
+                  'datetime,' \
+                  'action,price,' \
+                  'volume,' \
+                  'robot'
+        total_orders = self.__conn.call(
+            'get_amount_of_orders_in_order_log'
         )[0]
         fmt_date = f'{date.year}_{date.month}_{date.day}'
+        processed_orders = 0
         with open(f'{path}/order_log_{fmt_date}.csv', 'w') as f:
-            print(header, file=f)
-            for order in orders:
-                print(*order, sep=',', file=f)
+            print(headers, file=f)
+            while processed_orders <= total_orders:
+                orders = self.__conn.call(
+                    'get_orders_from_order_log',
+                    (processed_orders, processed_orders + self.__CHUNK_SIZE)
+                )[0]
+                processed_orders += self.__CHUNK_SIZE
+                for order in orders:
+                    print(*order, sep=',', file=f)
 
     def _create_order_book_spaces(self, ticker: str) -> None:
         self.__conn.call(
@@ -254,23 +263,30 @@ class User(ABC):
     def _save_trade_log(self,
                         path: str,
                         date: dt.date) -> None:
-        header = 'trade_no,' \
-                 'ticker,' \
-                 'datetime,' \
-                 'buy_order_no,' \
-                 'buyer_robot,' \
-                 'sell_order_no,' \
-                 'seller_robot,' \
-                 'price,' \
-                 'volume'
-        trades = self.__conn.call(
-            'get_all_trades_from_trade_log'
+        headers = 'trade_no,' \
+                  'ticker,' \
+                  'datetime,' \
+                  'buy_order_no,' \
+                  'buyer_robot,' \
+                  'sell_order_no,' \
+                  'seller_robot,' \
+                  'price,' \
+                  'volume'
+        total_trades = self.__conn.call(
+            'get_amount_of_trades_in_trade_log'
         )[0]
         fmt_date = f'{date.year}_{date.month}_{date.day}'
+        processed_trades = 0
         with open(f'{path}/trade_log_{fmt_date}.csv', 'w') as f:
-            print(header, file=f)
-            for trade in trades:
-                print(*trade, sep=',', file=f)
+            print(headers, file=f)
+            while processed_trades <= total_trades:
+                trades = self.__conn.call(
+                    'get_trades_from_trade_log',
+                    (processed_trades, processed_trades + self.__CHUNK_SIZE)
+                )[0]
+                processed_trades += self.__CHUNK_SIZE
+                for trade in trades:
+                    print(*trade, sep=',', file=f)
 
     def _get_last_trade_price_from_trade_log(self, ticker: str) \
             -> Union[int, float, None]:

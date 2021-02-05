@@ -160,8 +160,14 @@ function get_candles_from_trade_log(ticker, stop_dt, ofst)
     return candles
 end
 
-box.schema.func.create('get_all_trades_from_order_log')
-box.schema.user.grant('matching_engine', 'execute', 'function', 'get_all_trades_from_order_log')
-function get_all_trades_from_trade_log()
-    return box.space['trade_log']:select()
+box.schema.func.create('get_amount_of_trades_in_trade_log')
+box.schema.user.grant('matching_engine', 'execute', 'function', 'get_amount_of_trades_in_trade_log')
+function get_amount_of_trades_in_trade_log()
+    return box.space['trade_log']:len()
+end
+
+box.schema.func.create('get_trades_from_trade_log')
+box.schema.user.grant('matching_engine', 'execute', 'function', 'get_trades_from_trade_log')
+function get_trades_from_trade_log(start_no, end_no)
+    return box.space['trade_log']:select(start_no, {iterator='GE', limit = end_no - start_no})
 end

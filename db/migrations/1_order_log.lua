@@ -98,8 +98,14 @@ function add_order_to_order_log(order_no,
     return order_no
 end
 
-box.schema.func.create('get_all_orders_from_order_log')
-box.schema.user.grant('matching_engine', 'execute', 'function', 'get_all_orders_from_order_log')
-function get_all_orders_from_order_log()
-    return box.space['order_log']:select()
+box.schema.func.create('get_amount_of_orders_in_order_log')
+box.schema.user.grant('matching_engine', 'execute', 'function', 'get_amount_of_orders_in_order_log')
+function get_amount_of_orders_in_order_log()
+    return box.space['order_log']:len()
+end
+
+box.schema.func.create('get_orders_from_order_log')
+box.schema.user.grant('matching_engine', 'execute', 'function', 'get_orders_from_order_log')
+function get_orders_from_order_log(start_no, end_no)
+    return box.space['order_log']:select(start_no, {iterator = 'GE', limit = end_no-start_no})
 end
