@@ -1,4 +1,4 @@
-from typing import NoReturn, Iterable, Union
+from typing import Iterable, Union
 import datetime as dt
 from abc import abstractmethod
 
@@ -16,6 +16,15 @@ class MatchingEngine(User):
         for ticker in tickers:
             self._create_order_book_spaces(ticker)
 
+    @abstractmethod
+    def execute_delete_order(self, order: Order) -> list[Trade]: ...
+
+    @abstractmethod
+    def execute_market_order(self, order: Order) -> list[Trade]: ...
+
+    @abstractmethod
+    def execute_limit_order(self, order: Order) -> list[Trade]: ...
+
     def process_order(self, order: Order) -> list[Trade]:
         self.save_order(order)
         if order.is_to_delete():
@@ -31,16 +40,7 @@ class MatchingEngine(User):
                 self.save_trade(trade)
             return trades
 
-    @abstractmethod
-    def execute_delete_order(self, order: Order) -> list[Trade]: ...
-
-    @abstractmethod
-    def execute_market_order(self, order: Order) -> list[Trade]: ...
-
-    @abstractmethod
-    def execute_limit_order(self, order: Order) -> list[Trade]: ...
-
-    def create_tables(self) -> NoReturn:
+    def create_tables(self) -> None:
         self._create_order_log_space()
         self._create_trade_log_space()
 
@@ -52,17 +52,17 @@ class MatchingEngine(User):
 
     def save_tables(self,
                     path: str,
-                    date: dt.date) -> NoReturn:
+                    date: dt.date) -> None:
         self._save_order_log(path, date)
         self._save_trade_log(path, date)
 
-    def add_order(self, order: Order) -> NoReturn:
+    def add_order(self, order: Order) -> None:
         self._add_order_to_order_book(order)
 
-    def update_order(self, order: Order) -> NoReturn:
+    def update_order(self, order: Order) -> None:
         self._update_order_in_order_book(order)
 
-    def delete_order(self, order: Order) -> NoReturn:
+    def delete_order(self, order: Order) -> None:
         self._delete_order_from_order_book(order)
 
     def max_bid_price(self, ticker: str) -> Union[int, float]:

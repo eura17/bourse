@@ -1,4 +1,4 @@
-from typing import Union, NoReturn
+from typing import Union
 import datetime as dt
 from copy import deepcopy
 
@@ -35,7 +35,7 @@ class MarketPlace:
         self.discreteness = discreteness
         self.save_path = save_path
 
-    def train_robots(self) -> NoReturn:
+    def train_robots(self) -> None:
         for robot in self.robots:
             try:
                 robot.training(deepcopy(self.training_data))
@@ -43,8 +43,7 @@ class MarketPlace:
                 print(e)
         del self.training_data
 
-    def trade(self,
-              date: dt.date) -> NoReturn:
+    def trade(self, date: dt.date) -> None:
         self.matching_engine.create_tables()
         start_dt, end_dt = self.data_provider.get_trading_time_bounds(date)
         self.data_provider.prepare_to_load_orders_for_date(date)
@@ -71,7 +70,7 @@ class MarketPlace:
         if self.save_path:
             self.matching_engine.save_tables(self.save_path, date)
 
-    def start(self) -> NoReturn:
+    def start(self) -> None:
         self.train_robots()
         for date in self.dates:
             self.trade(date)

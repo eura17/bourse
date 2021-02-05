@@ -1,4 +1,4 @@
-from typing import NoReturn, Iterable
+from typing import Iterable
 import datetime as dt
 
 from dataprovider.dataprovider import DataProvider
@@ -6,7 +6,7 @@ from db.dataclasses import Order
 
 
 class DefaultDataProvider(DataProvider):
-    _dt_fmt = '%H%M%S%f'
+    __dt_fmt = '%H%M%S%f'
 
     def __init__(self,
                  date_to_file: dict[dt.date, str],
@@ -23,7 +23,7 @@ class DefaultDataProvider(DataProvider):
     def get_tickers(self) -> set[str]:
         return self.tickers
 
-    def prepare_to_load_orders_for_date(self, date: dt.datetime) -> NoReturn:
+    def prepare_to_load_orders_for_date(self, date: dt.datetime) -> None:
         self.current_file = open(self.date_to_file[date], 'r', encoding='utf8')
         self.current_file.readline()
 
@@ -33,13 +33,13 @@ class DefaultDataProvider(DataProvider):
             f.readline()
             start_dt = dt.datetime.strptime(
                 f.readline().split(',')[3],
-                self._dt_fmt
+                self.__dt_fmt
             )
             for line in f:
                 pass
             end_dt = dt.datetime.strptime(
                 line.split(',')[3],
-                self._dt_fmt
+                self.__dt_fmt
             )
         start_dt = dt.datetime(
             date.year,
@@ -77,7 +77,7 @@ class DefaultDataProvider(DataProvider):
             if action == '2':
                 continue
             operation = line[2]
-            datetime = dt.datetime.strptime(line[3], self._dt_fmt)
+            datetime = dt.datetime.strptime(line[3], self.__dt_fmt)
             datetime = dt.datetime(
                 start_dt.year,
                 start_dt.month,

@@ -1,4 +1,4 @@
-from typing import Iterable, NoReturn, Union
+from typing import Iterable, Union
 import datetime as dt
 
 from db.errors import (
@@ -21,31 +21,31 @@ class OrderTradeMixin:
     __ACTIONS = {'set', 'del'}
 
     @classmethod
-    def set_tickers(cls, tickers: Iterable[str]) -> NoReturn:
+    def set_tickers(cls, tickers: Iterable[str]) -> None:
         cls.__TICKERS = set(tickers)
 
     @property
-    def tickers(self):
+    def tickers(self) -> set:
         return self.__TICKERS
 
     @classmethod
-    def set_robots(cls, robots: Iterable[str]) -> NoReturn:
+    def set_robots(cls, robots: Iterable[str]) -> None:
         cls.__ROBOTS = set(robots)
 
     @property
-    def robots(self):
+    def robots(self) -> set:
         return self.__ROBOTS
 
     @property
-    def operations(self):
+    def operations(self) -> set:
         return self.__OPERATIONS
 
     @property
-    def types(self):
+    def types(self) -> set:
         return self.__TYPES
 
     @property
-    def actions(self):
+    def actions(self) -> set:
         return self.__ACTIONS
 
     def _check_ticker(self, value: str) -> str:

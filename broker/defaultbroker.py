@@ -1,4 +1,4 @@
-from typing import Union, NoReturn, Iterable
+from typing import Union, Iterable
 from collections import defaultdict
 
 from broker.broker import Broker
@@ -46,7 +46,7 @@ class DefaultBroker(Broker):
 
     def open_account(self,
                      robot: str,
-                     tickers: Iterable[str]) -> NoReturn:
+                     tickers: Iterable[str]) -> None:
         self.create_account(robot)
         self.add_asset(robot, 'CASH', 1,
                        self.accounts_settings[robot]['start_account'])
@@ -75,13 +75,13 @@ class DefaultBroker(Broker):
 
     def register_trade(self,
                        robot: str,
-                       trade: Trade) -> NoReturn:
+                       trade: Trade) -> None:
         self.accrue_asset(robot, trade)
         self.accrue_cash(robot, trade)
 
     def accrue_asset(self,
                      robot: str,
-                     trade: Trade) -> NoReturn:
+                     trade: Trade) -> None:
         cnp, cnv = self.get_asset(robot, trade.ticker)
         sign = (-1) ** (trade.seller_robot == robot)
         dvol = trade.volume * sign
@@ -110,7 +110,7 @@ class DefaultBroker(Broker):
 
     def accrue_cash(self,
                     robot: str,
-                    trade: Trade) -> NoReturn:
+                    trade: Trade) -> None:
         _, cash = self.get_asset(robot, 'CASH')
         sign = (-1) ** (trade.buyer_robot == robot)
         trade_cost = trade.price * trade.volume * sign - \

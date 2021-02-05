@@ -1,4 +1,4 @@
-from typing import Union, NoReturn
+from typing import Union
 import datetime as dt
 
 from db.dataclasses.ordertrademixin import OrderTradeMixin
@@ -6,7 +6,7 @@ from db.errors.executionvolumeerror import ExecutionVolumeError
 
 
 class Order(OrderTradeMixin):
-    __slots__ = [
+    __slots__ = (
         '__order_no',
         '__real_order_no',
         '__ticker',
@@ -17,7 +17,7 @@ class Order(OrderTradeMixin):
         '__price',
         '__volume',
         '__robot'
-    ]
+    )
 
     def __init__(self,
                  ticker: str,
@@ -43,14 +43,14 @@ class Order(OrderTradeMixin):
     def order_no(self) -> int:
         return self.__order_no
 
-    def set_order_no(self, value: int) -> NoReturn:
+    def set_order_no(self, value: int) -> None:
         self.__order_no = value
 
     @property
     def real_order_no(self) -> int:
         return self.__real_order_no
 
-    def set_real_order_no(self, value: int):
+    def set_real_order_no(self, value: int) -> None:
         self.__real_order_no = value
 
     @property
@@ -106,7 +106,7 @@ class Order(OrderTradeMixin):
     def is_executed(self) -> bool:
         return self.__volume == 0
 
-    def execute(self, volume: int) -> NoReturn:
+    def execute(self, volume: int) -> None:
         if isinstance(volume, int) and volume <= self.volume:
             self.__volume -= volume
         else:

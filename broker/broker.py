@@ -1,4 +1,4 @@
-from typing import Union, NoReturn, Iterable
+from typing import Union, Iterable
 from abc import abstractmethod
 
 from db import User
@@ -14,23 +14,23 @@ class Broker(User):
     @abstractmethod
     def validate_order(self, order: Order) -> bool: ...
 
-    def process_trade(self, trade: Trade) -> NoReturn:
+    @abstractmethod
+    def register_trade(self, robot: str, trade: Trade) -> None: ...
+
+    def process_trade(self, trade: Trade) -> None:
         if trade.buyer_robot is not None:
             self.register_trade(trade.buyer_robot, trade)
         if trade.seller_robot is not None:
             self.register_trade(trade.seller_robot, trade)
 
-    @abstractmethod
-    def register_trade(self, robot: str, trade: Trade) -> NoReturn: ...
-
-    def create_account(self, robot: str) -> NoReturn:
+    def create_account(self, robot: str) -> None:
         self._create_account_space(robot)
 
     def add_asset(self,
                   robot: str,
                   asset: str,
                   price: Union[int, float] = None,
-                  volume: Union[int, float] = None) -> NoReturn:
+                  volume: Union[int, float] = None) -> None:
         self._add_asset_to_account(robot, asset, price, volume)
 
     def get_asset(self,
@@ -45,7 +45,7 @@ class Broker(User):
                      robot: str,
                      asset: str,
                      price: Union[int, float] = None,
-                     volume: Union[int, float] = None) -> NoReturn:
+                     volume: Union[int, float] = None) -> None:
         self._change_asset_in_account(robot, asset, price, volume)
 
     def liquidation_cost(self, robot: str) -> Union[int, float]:

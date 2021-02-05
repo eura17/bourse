@@ -1,4 +1,4 @@
-from typing import Union, NoReturn
+from typing import Union
 import datetime as dt
 from abc import abstractmethod
 
@@ -8,11 +8,11 @@ from db.dataclasses import Order, Candle
 
 class Robot(User):
     __DATETIME: dt.datetime = None
-    __slots__ = [
+    __slots__ = (
         '__name',
         '__orders',
         '__tmp_data'
-    ]
+    )
 
     def __init__(self, name: str):
         super().__init__('robot', 'robot')
@@ -21,7 +21,7 @@ class Robot(User):
         self.__tmp_data = {}
 
     @classmethod
-    def set_datetime(cls, value: dt.datetime) -> NoReturn:
+    def set_datetime(cls, value: dt.datetime) -> None:
         cls.__DATETIME = value
 
     @property
@@ -41,10 +41,10 @@ class Robot(User):
         return self.__tmp_data
 
     @abstractmethod
-    def training(self, training_data) -> NoReturn: ...
+    def training(self, training_data) -> None: ...
 
     @abstractmethod
-    def trading(self) -> NoReturn: ...
+    def trading(self) -> None: ...
 
     def reset(self):
         self.__orders = []
@@ -90,7 +90,7 @@ class Robot(User):
                   operation: str,
                   order_type: str,
                   volume: int,
-                  price: Union[int, float] = 0) -> NoReturn:
+                  price: Union[int, float] = 0) -> None:
         order = Order(
             ticker,
             operation,
@@ -105,16 +105,16 @@ class Robot(User):
 
     def order_delete(self,
                      order: Order,
-                     volume: int = None) -> NoReturn:
+                     volume: int = None) -> None:
         order = Order(
-                order.ticker,
-                order.operation,
-                order.type,
-                self.__DATETIME,
-                'delete',
-                order.price,
-                volume or order.volume,
-                self.name
+            order.ticker,
+            order.operation,
+            order.type,
+            self.__DATETIME,
+            'delete',
+            order.price,
+            volume or order.volume,
+            self.name
         )
         order.set_order_no(order.order_no)
         order.set_real_order_no(order.real_order_no)

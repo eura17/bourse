@@ -1,4 +1,4 @@
-from typing import Iterable, NoReturn
+from typing import Iterable
 from abc import abstractmethod
 import datetime as dt
 
@@ -11,24 +11,19 @@ class DataProvider(User):
         super().__init__('data_provider', 'data_provider')
 
     @abstractmethod
-    def get_dates(self) -> Iterable[dt.date]:
-        pass
+    def get_dates(self) -> Iterable[dt.date]: ...
 
     @abstractmethod
-    def get_tickers(self) -> Iterable[str]:
-        pass
+    def get_tickers(self) -> Iterable[str]: ...
 
     @abstractmethod
     def get_trading_time_bounds(self, date: dt.date) -> tuple[dt.datetime,
-                                                              dt.datetime]:
-        pass
+                                                              dt.datetime]: ...
 
     @abstractmethod
-    def prepare_to_load_orders_for_date(self, date: dt.date) -> NoReturn:
-        pass
+    def prepare_to_load_orders_for_date(self, date: dt.date) -> None: ...
 
     @abstractmethod
     def get_orders(self,
                    start_dt: dt.datetime,
-                   end_dt: dt.datetime) -> list[Order]:
-        pass
+                   end_dt: dt.datetime) -> list[Order]: ...

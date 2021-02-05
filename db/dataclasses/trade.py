@@ -5,7 +5,7 @@ from db.dataclasses.ordertrademixin import OrderTradeMixin
 
 
 class Trade(OrderTradeMixin):
-    __slots__ = [
+    __slots__ = (
         '__ticker',
         '__datetime',
         '__buy_order_no',
@@ -14,7 +14,7 @@ class Trade(OrderTradeMixin):
         '__seller_robot',
         '__price',
         '__volume'
-    ]
+    )
 
     def __init__(self,
                  ticker: str,
