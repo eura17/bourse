@@ -99,7 +99,7 @@ function get_liquidation_cost_for_account(robot)
         if asset == 'CASH' then
             price = 1
         else
-            price = get_last_trade_price(asset)
+            price = get_last_trade_price_from_trade_log(asset)
             if price == box.NULL then
                 local min_ask = get_min_ask_price_from_order_book(asset)
                 local max_bid = get_max_bid_price_from_order_book(asset)

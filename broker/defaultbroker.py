@@ -54,6 +54,8 @@ class DefaultBroker(Broker):
             self.add_asset(robot, ticker)
 
     def validate_order(self, order: Order) -> bool:
+        if order.is_to_delete():
+            return True
         _, cash = self.get_asset(order.robot, 'CASH')
         to_buy = order.is_buy()
         sign = (-1) ** to_buy
@@ -88,7 +90,7 @@ class DefaultBroker(Broker):
         if cnv * dvol == 0:
             price, volume = trade.price, dvol
         elif cnv * dvol > 0:
-            price, volume = self.avco(cnp, cnv, trade.price, trade.volume)
+            price, volume = self.avco(cnp, cnv, trade.price, dvol)
         else:
             total_volume = cnv + dvol
             if cnv * total_volume == 0:

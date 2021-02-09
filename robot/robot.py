@@ -46,7 +46,7 @@ class Robot(User):
     @abstractmethod
     def trading(self) -> None: ...
 
-    def reset(self):
+    def reset(self) -> None:
         self.__orders = []
 
     def max_bid_price(self, ticker: str) -> Union[int, float]:
@@ -79,11 +79,13 @@ class Robot(User):
         else:
             return self._get_asset_from_account(self.name, asset)
 
-    def liquidation_cost(self):
+    def liquidation_cost(self) -> Union[int, float]:
         return self._get_liquidation_cost_for_account(self.name)
 
-    def active_orders(self, ticker: str, operation: str = None):
-        self._get_active_orders_from_order_book(self.name, ticker, operation)
+    def active_orders(self, ticker: str, operation: str = None) -> list[Order]:
+        return self._get_active_orders_from_order_book(self.name,
+                                                       ticker,
+                                                       operation)
 
     def order_set(self,
                   ticker: str,
@@ -106,16 +108,15 @@ class Robot(User):
     def order_delete(self,
                      order: Order,
                      volume: int = None) -> None:
-        order = Order(
+        order_del = Order(
             order.ticker,
             order.operation,
             order.type,
             self.__DATETIME,
-            'delete',
+            'del',
             order.price,
             volume or order.volume,
             self.name
         )
-        order.set_order_no(order.order_no)
-        order.set_real_order_no(order.real_order_no)
-        self.__orders.append(order)
+        order_del.set_order_no(order.order_no)
+        self.__orders.append(order_del)

@@ -209,7 +209,7 @@ class User(ABC):
             raw_orders = self.__conn.call(
                 'get_active_orders_from_order_book',
                 (robot, ticker, operation)
-            )
+            )[0]
             orders = []
             for raw_order in raw_orders:
                 order = Order(

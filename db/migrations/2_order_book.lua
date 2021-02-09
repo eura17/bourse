@@ -16,7 +16,7 @@ function create_order_book_spaces(ticker)
                     {name = 'real_order_no', type = 'unsigned', is_nullable = true},
                     {name = 'datetime', type = 'number'},
                     {name = 'price', type = 'number'},
-                    {name = 'volume', type = 'number'},
+                    {name = 'volume', type = 'unsigned'},
                     {name = 'robot', type = 'string', is_nullable = true}
                 }
         )
@@ -78,7 +78,7 @@ function update_order_in_order_book(ticker,
                                     order_no,
                                     volume)
     local space = (operation == 'buy' and 'bid' or operation == 'sell' and 'ask')..'_'..ticker
-    if volume == 0 then
+    if volume <= 0 then
         box.space[space]:delete(order_no)
     else
         box.space[space]:update(order_no, {{'=', 'volume', volume}})
@@ -207,27 +207,35 @@ box.schema.user.grant('robot', 'execute', 'function', 'get_active_orders_from_or
 function get_active_orders_from_order_book(robot, ticker, operation)
     local raw_orders = {buy = {}, sell = {}}
     if operation == 'buy' then
-        local bids = box.space['bid_'..ticker].index.robot:select(robot)[1]
-        for _, order in pairs(bids) do
-            table.insert(raw_orders['buy'], order)
+        local bids = box.space['bid_'..ticker].index.robot:select(robot)
+        if bids ~= box.NULL then
+            for _, order in pairs(bids) do
+                table.insert(raw_orders['buy'], order)
+            end
         end
     elseif operation == 'sell' then
-        local asks = box.space['ask_'..ticker].index.robot:select(robot)[1]
-        for _, order in pairs(asks) do
-            table.insert(raw_orders['sell'], order)
+        local asks = box.space['ask_'..ticker].index.robot:select(robot)
+        if asks ~= box.NULL then
+            for _, order in pairs(asks) do
+                table.insert(raw_orders['sell'], order)
+            end
         end
     else
-        local bids = box.space['bid_'..ticker].index.robot:select(robot)[1]
-        for _, order in pairs(bids) do
-            table.insert(raw_orders['buy'], order)
+        local bids = box.space['bid_'..ticker].index.robot:select(robot)
+        if bids ~= box.NULL then
+            for _, order in pairs(bids) do
+                table.insert(raw_orders['buy'], order)
+            end
         end
-        local asks = box.space['ask_'..ticker].index.robot:select(robot)[1]
-        for _, order in pairs(asks) do
-            table.insert(raw_orders['buy'], order)
+        local asks = box.space['ask_'..ticker].index.robot:select(robot)
+        if asks ~= box.NULL then
+            for _, order in pairs(asks) do
+                table.insert(raw_orders['sell'], order)
+            end
         end
     end
     local orders = {}
-    for side, orders_ in pairs(raw_orders['buy']) do
+    for side, orders_ in pairs(raw_orders) do
         for _, order in pairs(orders_) do
             table.insert(
                     orders,

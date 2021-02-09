@@ -29,8 +29,8 @@ class Broker(User):
     def add_asset(self,
                   robot: str,
                   asset: str,
-                  price: Union[int, float] = None,
-                  volume: Union[int, float] = None) -> None:
+                  price: Union[int, float] = 0,
+                  volume: Union[int, float] = 0) -> None:
         self._add_asset_to_account(robot, asset, price, volume)
 
     def get_asset(self,
