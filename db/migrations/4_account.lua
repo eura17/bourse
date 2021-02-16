@@ -1,3 +1,6 @@
+if box.schema.func:exists('create_account_space') then
+    box.schema.func.drop('create_account_space')
+end
 box.schema.func.create('create_account_space')
 box.schema.user.grant('broker', 'execute', 'function', 'create_account_space')
 function create_account_space(robot)
@@ -42,6 +45,9 @@ function create_account_space(robot)
     box.schema.user.grant('robot', 'read', 'space', space)
 end
 
+if box.schema.func:exists('add_asset_to_account') then
+    box.schema.func.drop('add_asset_to_account')
+end
 box.schema.func.create('add_asset_to_account')
 box.schema.user.grant('broker', 'execute', 'function', 'add_asset_to_account')
 function add_asset_to_account(robot,
@@ -54,6 +60,9 @@ function add_asset_to_account(robot,
                                          volume})
 end
 
+if box.schema.func:exists('get_asset_from_account') then
+    box.schema.func.drop('get_asset_from_account')
+end
 box.schema.func.create('get_asset_from_account')
 box.schema.user.grant('broker', 'execute', 'function', 'get_asset_from_account')
 box.schema.user.grant('robot', 'execute', 'function', 'get_asset_from_account')
@@ -63,6 +72,9 @@ function get_asset_from_account(robot,
     return {rec[3], rec[4]}
 end
 
+if box.schema.func:exists('get_all_assets_from_account') then
+    box.schema.func.drop('get_all_assets_from_account')
+end
 box.schema.func.create('get_all_assets_from_account')
 box.schema.user.grant('broker', 'execute', 'function', 'get_all_assets_from_account')
 box.schema.user.grant('robot', 'execute', 'function', 'get_all_assets_from_account')
@@ -75,6 +87,9 @@ function get_all_assets_from_account(robot)
     return assets
 end
 
+if box.schema.func:exists('change_asset_in_account') then
+    box.schema.func.drop('change_asset_in_account')
+end
 box.schema.func.create('change_asset_in_account')
 box.schema.user.grant('broker', 'execute', 'function', 'change_asset_in_account')
 function change_asset_in_account(robot,
@@ -88,6 +103,9 @@ function change_asset_in_account(robot,
                              {'=', 'volume', volume}})
 end
 
+if box.schema.func:exists('get_liquidation_cost_for_account') then
+    box.schema.func.drop('get_liquidation_cost_for_account')
+end
 box.schema.func.create('get_liquidation_cost_for_account')
 box.schema.user.grant('broker', 'execute', 'function', 'get_liquidation_cost_for_account')
 box.schema.user.grant('robot', 'execute', 'function', 'get_liquidation_cost_for_account')

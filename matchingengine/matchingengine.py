@@ -1,4 +1,4 @@
-from typing import Iterable, Union
+from typing import Iterable, Union, List
 import datetime as dt
 from abc import abstractmethod
 
@@ -7,7 +7,7 @@ from db.dataclasses import Order, Trade
 
 
 class MatchingEngine(User):
-    __slots__ = []
+    __slots__ = ()
 
     def __init__(self,
                  tickers: Iterable[str]):
@@ -17,15 +17,15 @@ class MatchingEngine(User):
             self._create_order_book_spaces(ticker)
 
     @abstractmethod
-    def execute_delete_order(self, order: Order) -> list[Trade]: ...
+    def execute_delete_order(self, order: Order) -> List[Trade]: ...
 
     @abstractmethod
-    def execute_market_order(self, order: Order) -> list[Trade]: ...
+    def execute_market_order(self, order: Order) -> List[Trade]: ...
 
     @abstractmethod
-    def execute_limit_order(self, order: Order) -> list[Trade]: ...
+    def execute_limit_order(self, order: Order) -> List[Trade]: ...
 
-    def process_order(self, order: Order) -> list[Trade]:
+    def process_order(self, order: Order) -> List[Trade]:
         self.save_order(order)
         if order.is_to_delete():
             return self.execute_delete_order(order)

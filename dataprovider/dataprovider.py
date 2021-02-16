@@ -1,4 +1,4 @@
-from typing import Iterable
+from typing import Iterable, Tuple, List
 from abc import abstractmethod
 import datetime as dt
 
@@ -17,7 +17,7 @@ class DataProvider(User):
     def get_tickers(self) -> Iterable[str]: ...
 
     @abstractmethod
-    def get_trading_time_bounds(self, date: dt.date) -> tuple[dt.datetime,
+    def get_trading_time_bounds(self, date: dt.date) -> Tuple[dt.datetime,
                                                               dt.datetime]: ...
 
     @abstractmethod
@@ -26,4 +26,4 @@ class DataProvider(User):
     @abstractmethod
     def get_orders(self,
                    start_dt: dt.datetime,
-                   end_dt: dt.datetime) -> list[Order]: ...
+                   end_dt: dt.datetime) -> List[Order]: ...

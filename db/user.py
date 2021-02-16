@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, List
 from abc import ABC
 import datetime as dt
 
@@ -204,7 +204,7 @@ class User(ABC):
                                            robot: str,
                                            ticker: str,
                                            operation: str = None) \
-            -> list[Order]:
+            -> List[Order]:
         if operation in OrderTradeMixin().operations or operation is None:
             raw_orders = self.__conn.call(
                 'get_active_orders_from_order_book',
@@ -230,7 +230,7 @@ class User(ABC):
             raise OperationError(operation)
 
     def _get_order_book(self, ticker: str) \
-            -> dict[str, list[tuple[int, float]]]:
+            -> dict[str, List[tuple[int, float]]]:
         bid_ask = self.__conn.call(
             'get_order_book',
             (ticker,)
@@ -299,7 +299,7 @@ class User(ABC):
                                     ticker: str,
                                     timeframe: str,
                                     datetime: dt.datetime,
-                                    n: int = 1) -> list[type(Candle)]:
+                                    n: int = 1) -> List[type(Candle)]:
         if timeframe not in self.__TIMEFRAMES:
             raise TimeFrameError(timeframe)
         tf = self.__TIMEFRAMES[timeframe]
@@ -366,9 +366,21 @@ class User(ABC):
             (robot, asset, price, volume)
         )
 
-    def _get_liquidation_cost_for_account(self,
-                                          robot: str) -> Union[int, float]:
+    def _get_liquidation_cost_for_account(self, robot: str) \
+            -> Union[int, float]:
         return self.__conn.call(
             'get_liquidation_cost_for_account',
             (robot,)
         )[0]
+
+    def _create_equity_curve_space(self, robot: str) -> None:
+        self.__conn.call(
+            'create_equity_curve_space',
+            (robot,)
+        )
+
+    def _update_equity_curve_space(self, datetime: float, robot: str) -> None:
+        self.__conn.call(
+            'update_equity_curve_space',
+            (datetime, robot)
+        )

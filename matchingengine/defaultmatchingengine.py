@@ -1,10 +1,12 @@
+from typing import List
+
 from matchingengine.matchingengine import MatchingEngine
 from db.dataclasses import Order
 from db.dataclasses import Trade
 
 
 class DefaultMatchingEngine(MatchingEngine):
-    def execute_delete_order(self, order: Order) -> list[Trade]:
+    def execute_delete_order(self, order: Order) -> List[Trade]:
         self.delete_order(order)
         return []
 

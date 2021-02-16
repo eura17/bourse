@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, List
 import datetime as dt
 from abc import abstractmethod
 
@@ -33,7 +33,7 @@ class Robot(User):
         return self.__name
 
     @property
-    def orders(self) -> list[Order]:
+    def orders(self) -> List[Order]:
         return self.__orders
 
     @property
@@ -82,7 +82,7 @@ class Robot(User):
     def liquidation_cost(self) -> Union[int, float]:
         return self._get_liquidation_cost_for_account(self.name)
 
-    def active_orders(self, ticker: str, operation: str = None) -> list[Order]:
+    def active_orders(self, ticker: str, operation: str = None) -> List[Order]:
         return self._get_active_orders_from_order_book(self.name,
                                                        ticker,
                                                        operation)

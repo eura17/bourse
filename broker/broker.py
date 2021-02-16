@@ -1,4 +1,4 @@
-from typing import Union, Iterable
+from typing import Union, Iterable, Dict
 from abc import abstractmethod
 
 from db import User
@@ -38,7 +38,7 @@ class Broker(User):
                   asset: str) -> list[int, float]:
         return self._get_asset_from_account(robot, asset)
 
-    def get_all_assets(self, robot: str) -> dict[str, tuple[int, float]]:
+    def get_all_assets(self, robot: str) -> Dict[str, tuple[int, float]]:
         return self._get_all_assets_from_account(robot)
 
     def change_asset(self,
@@ -47,6 +47,12 @@ class Broker(User):
                      price: Union[int, float] = None,
                      volume: Union[int, float] = None) -> None:
         self._change_asset_in_account(robot, asset, price, volume)
+
+    def create_equity_curve(self, robot: str) -> None:
+        self._create_equity_curve_space(robot)
+
+    def update_equity_curve(self, datetime: float, robot: str) -> None:
+        self._update_equity_curve_space(datetime, robot)
 
     def liquidation_cost(self, robot: str) -> Union[int, float]:
         return self._get_liquidation_cost_for_account(robot)

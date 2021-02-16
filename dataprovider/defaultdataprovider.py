@@ -1,4 +1,4 @@
-from typing import Iterable
+from typing import Iterable, Dict, Tuple, List
 import datetime as dt
 
 from dataprovider.dataprovider import DataProvider
@@ -9,7 +9,7 @@ class DefaultDataProvider(DataProvider):
     __dt_fmt = '%H%M%S%f'
 
     def __init__(self,
-                 date_to_file: dict[dt.date, str],
+                 date_to_file: Dict[dt.date, str],
                  tickers: Iterable[str]):
         super().__init__()
         self.date_to_file = date_to_file
@@ -27,7 +27,7 @@ class DefaultDataProvider(DataProvider):
         self.current_file = open(self.date_to_file[date], 'r', encoding='utf8')
         self.current_file.readline()
 
-    def get_trading_time_bounds(self, date: dt.date) -> tuple[dt.datetime,
+    def get_trading_time_bounds(self, date: dt.date) -> Tuple[dt.datetime,
                                                               dt.datetime]:
         with open(self.date_to_file[date], 'r', encoding='utf8') as f:
             f.readline()
@@ -63,7 +63,7 @@ class DefaultDataProvider(DataProvider):
 
     def get_orders(self,
                    start_dt: dt.datetime,
-                   end_dt: dt.datetime) -> list[Order]:
+                   end_dt: dt.datetime) -> List[Order]:
         orders = []
         if self._extra_order is not None:
             orders.append(self._extra_order)

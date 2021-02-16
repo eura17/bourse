@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, List
 import datetime as dt
 from copy import deepcopy
 
@@ -11,7 +11,7 @@ from broker import DefaultBroker
 class MarketPlace:
     def __init__(self,
                  data_provider: DataProvider,
-                 robots: list[Robot],
+                 robots: List[Robot],
                  training_data=None,
                  accounts_settings: dict[str,
                                          dict[str,
@@ -48,14 +48,16 @@ class MarketPlace:
         start_dt, end_dt = self.data_provider.get_trading_time_bounds(date)
         self.data_provider.prepare_to_load_orders_for_date(date)
         while start_dt < end_dt:
-            orders = self.data_provider.get_orders(start_dt,
-                                                   start_dt+self.discreteness)
+            bound_dt = start_dt+self.discreteness
+            orders = self.data_provider.get_orders(start_dt, bound_dt)
             for order in orders:
                 trades = self.matching_engine.process_order(order)
                 for trade in trades:
                     self.broker.process_trade(trade)
             Robot.set_datetime(start_dt+self.discreteness)
             for robot in self.robots:
+                self.broker.update_equity_curve(bound_dt.timestamp(),
+                                                robot.name)
                 try:
                     robot.trading()
                 except Exception as e:

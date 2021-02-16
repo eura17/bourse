@@ -1,4 +1,4 @@
-from typing import Union, Iterable
+from typing import Union, Iterable, Dict, Tuple
 from collections import defaultdict
 
 from broker.broker import Broker
@@ -14,8 +14,8 @@ class DefaultBroker(Broker):
     def __init__(self,
                  robots: Iterable[str],
                  tickers: Iterable[str],
-                 accounts_settings: dict[str,
-                                         dict[str,
+                 accounts_settings: Dict[str,
+                                         Dict[str,
                                               Union[int, float]]] = None):
         super().__init__(robots)
         accounts_settings = accounts_settings or {}
@@ -52,6 +52,7 @@ class DefaultBroker(Broker):
                        self.accounts_settings[robot]['start_account'])
         for ticker in tickers:
             self.add_asset(robot, ticker)
+        self.create_equity_curve(robot)
 
     def validate_order(self, order: Order) -> bool:
         if order.is_to_delete():
@@ -105,7 +106,7 @@ class DefaultBroker(Broker):
     def avco(price0: Union[int, float],
              volume0: int,
              price1: Union[int, float],
-             volume1: int) -> tuple[float, int]:
+             volume1: int) -> Tuple[float, int]:
         vol = volume0 + volume1
         avco = price0 * (volume0 / vol) + price1 * (volume1 / vol)
         return avco, vol
@@ -129,7 +130,7 @@ class DefaultBroker(Broker):
         commission_abs = self.accounts_settings[robot]['commission_abs']
         return commission_pct + commission_abs
 
-    def cash_limits(self, robot: str) -> tuple[int, float]:
+    def cash_limits(self, robot: str) -> Tuple[int, float]:
         liq_cost = self.liquidation_cost(robot)
         min_limit = liq_cost * (1 - self.accounts_settings[robot]['leverage'])
         max_limit = liq_cost * (1 + self.accounts_settings[robot]['leverage'])
