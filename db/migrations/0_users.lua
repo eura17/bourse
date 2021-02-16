@@ -48,3 +48,10 @@ if box.schema.user.exists('robot') then
     box.schema.user.drop('robot')
 end
 box.schema.user.create('robot', {password='robot'})
+
+-- user: web
+if box.schema.user.exists('web') then
+    box.schema.user.drop('web')
+end
+box.schema.user.create('web', {password='web'})
+box.schema.user.grant('web', 'read,execute', 'universe')
