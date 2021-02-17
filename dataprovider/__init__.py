@@ -1,2 +1,2 @@
-from dataprovider.dataprovider import DataProvider
-from dataprovider.defaultdataprovider import DefaultDataProvider
+from dataprovider.basedataprovider import BaseDataProvider
+from dataprovider.moexdataprovider import MOEXDataProvider

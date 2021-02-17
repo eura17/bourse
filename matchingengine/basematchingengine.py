@@ -1,16 +1,14 @@
 from typing import Iterable, Union, List
-import datetime as dt
 from abc import abstractmethod
 
 from db import User
 from db.dataclasses import Order, Trade
 
 
-class MatchingEngine(User):
+class BaseMatchingEngine(User):
     __slots__ = ()
 
-    def __init__(self,
-                 tickers: Iterable[str]):
+    def __init__(self, tickers: Iterable[str]):
         super().__init__('matching_engine', 'matching_engine')
         self._set_tickers(tickers)
         for ticker in tickers:
@@ -50,11 +48,9 @@ class MatchingEngine(User):
     def save_trade(self, trade: Trade):
         self._add_trade_to_trade_log(trade)
 
-    def save_tables(self,
-                    path: str,
-                    date: dt.date) -> None:
-        self._save_order_log(path, date)
-        self._save_trade_log(path, date)
+    def save_tables(self, path: str) -> None:
+        self._save_order_log(path)
+        self._save_trade_log(path)
 
     def add_order(self, order: Order) -> None:
         self._add_order_to_order_book(order)

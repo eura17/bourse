@@ -6,7 +6,7 @@ from db import User
 from db.dataclasses import Order
 
 
-class DataProvider(User):
+class BaseDataProvider(User):
     def __init__(self):
         super().__init__('data_provider', 'data_provider')
 

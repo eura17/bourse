@@ -4,7 +4,7 @@ import datetime as dt
 
 import tarantool
 
-from db.dataclasses import Order, Trade, Candle
+from db.dataclasses import Order, Trade, Candle, OrderBook
 from db.dataclasses.ordertrademixin import OrderTradeMixin
 from db.errors import OperationError, TimeFrameError, TickerError
 
@@ -76,9 +76,7 @@ class User(ABC):
         )[0]
         order.set_order_no(order_no)
 
-    def _save_order_log(self,
-                        path: str,
-                        date: dt.date) -> None:
+    def _save_order_log(self, path: str) -> None:
         headers = 'no,' \
                   'order_no,' \
                   'real_order_no,' \
@@ -92,9 +90,8 @@ class User(ABC):
         total_orders = self.__conn.call(
             'get_amount_of_orders_in_order_log'
         )[0]
-        fmt_date = f'{date.year}_{date.month}_{date.day}'
         processed_orders = 0
-        with open(f'{path}/order_log_{fmt_date}.csv', 'w') as f:
+        with open(f'{path}/order_log.csv', 'w') as f:
             print(headers, file=f)
             while processed_orders <= total_orders:
                 orders = self.__conn.call(
@@ -229,16 +226,15 @@ class User(ABC):
         else:
             raise OperationError(operation)
 
-    def _get_order_book(self, ticker: str) \
-            -> Dict[str, List[Tuple[int, float]]]:
+    def _get_order_book(self, ticker: str) -> OrderBook:
         bid_ask = self.__conn.call(
             'get_order_book',
             (ticker,)
         )[0]
-        order_book = {
-            'bid': list(sorted(bid_ask['bids'].items(), reverse=True)),
-            'ask': list(sorted(bid_ask['asks'].items()))
-        }
+        order_book = OrderBook(
+            bid=tuple(sorted(bid_ask['bids'].items(), reverse=True)),
+            ask=tuple(sorted(bid_ask['asks'].items()))
+        )
         return order_book
 
     def _create_trade_log_space(self) -> None:
@@ -260,9 +256,7 @@ class User(ABC):
              trade.volume)
         )
 
-    def _save_trade_log(self,
-                        path: str,
-                        date: dt.date) -> None:
+    def _save_trade_log(self, path: str) -> None:
         headers = 'trade_no,' \
                   'ticker,' \
                   'datetime,' \
@@ -275,9 +269,8 @@ class User(ABC):
         total_trades = self.__conn.call(
             'get_amount_of_trades_in_trade_log'
         )[0]
-        fmt_date = f'{date.year}_{date.month}_{date.day}'
         processed_trades = 0
-        with open(f'{path}/trade_log_{fmt_date}.csv', 'w') as f:
+        with open(f'{path}/trade_log.csv', 'w') as f:
             print(headers, file=f)
             while processed_trades <= total_trades:
                 trades = self.__conn.call(
@@ -299,7 +292,7 @@ class User(ABC):
                                     ticker: str,
                                     timeframe: str,
                                     datetime: dt.datetime,
-                                    n: int = 1) -> List[type(Candle)]:
+                                    n: int = 1) -> List[Candle]:
         if timeframe not in self.__TIMEFRAMES:
             raise TimeFrameError(timeframe)
         tf = self.__TIMEFRAMES[timeframe]
@@ -332,7 +325,7 @@ class User(ABC):
                               robot: str,
                               asset: str,
                               price: Union[int, float] = 0,
-                              volume: int = 0):
+                              volume: int = 0) -> None:
         self.__conn.call(
             'add_asset_to_account',
             (robot, asset, price, volume)
@@ -340,12 +333,12 @@ class User(ABC):
 
     def _get_asset_from_account(self,
                                 robot: str,
-                                asset: str) -> Tuple[int, float]:
+                                asset: str) -> Tuple[float, int]:
         if asset in OrderTradeMixin().tickers or asset == 'CASH':
-            return self.__conn.call(
+            return tuple(self.__conn.call(
                 'get_asset_from_account',
                 (robot, asset)
-            )[0]
+            )[0])
         else:
             raise TickerError(asset)
 
@@ -378,6 +371,25 @@ class User(ABC):
             'create_equity_curve_space',
             (robot,)
         )
+
+    def _save_equity_curve(self, robot: str, path: str) -> None:
+        headers = 'no, datetime, liquidation_cost'
+        total_records = self.__conn.call(
+            'get_amount_of_records_in_equity_curve',
+            (robot,)
+        )[0]
+        processed_records = 0
+        with open(f'{path}/equity_curve_{robot}.csv', 'w') as f:
+            print(headers, file=f)
+            while processed_records <= total_records:
+                records = self.__conn.call(
+                    'get_records_from_equity_curve',
+                    (robot,
+                     processed_records, processed_records + self.__CHUNK_SIZE)
+                )[0]
+                processed_records += self.__CHUNK_SIZE
+                for record in records:
+                    print(*record, sep=',', file=f)
 
     def _update_equity_curve_space(self, datetime: float, robot: str) -> None:
         self.__conn.call(

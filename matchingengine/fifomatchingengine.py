@@ -1,11 +1,11 @@
 from typing import List
 
-from matchingengine.matchingengine import MatchingEngine
+from matchingengine.basematchingengine import BaseMatchingEngine
 from db.dataclasses import Order
 from db.dataclasses import Trade
 
 
-class DefaultMatchingEngine(MatchingEngine):
+class FIFOMatchingEngine(BaseMatchingEngine):
     def execute_delete_order(self, order: Order) -> List[Trade]:
         self.delete_order(order)
         return []

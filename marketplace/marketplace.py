@@ -2,16 +2,16 @@ from typing import Union, List, Dict
 import datetime as dt
 from copy import deepcopy
 
-from dataprovider import DataProvider
-from robot import Robot
-from matchingengine import DefaultMatchingEngine
+from dataprovider import BaseDataProvider
+from robot import BaseRobot
+from matchingengine import FIFOMatchingEngine
 from broker import DefaultBroker
 
 
 class MarketPlace:
     def __init__(self,
-                 data_provider: DataProvider,
-                 robots: List[Robot],
+                 data_provider: BaseDataProvider,
+                 robots: List[BaseRobot],
                  training_data=None,
                  accounts_settings: Dict[str,
                                          Dict[str,
@@ -27,7 +27,7 @@ class MarketPlace:
         self.dates = self.data_provider.get_dates()
         tickers = self.data_provider.get_tickers()
 
-        self.matching_engine = DefaultMatchingEngine(tickers)
+        self.matching_engine = FIFOMatchingEngine(tickers)
         self.broker = DefaultBroker(robot_names, tickers, accounts_settings)
 
         self.robots = robots
@@ -44,7 +44,6 @@ class MarketPlace:
         del self.training_data
 
     def trade(self, date: dt.date) -> None:
-        self.matching_engine.create_tables()
         start_dt, end_dt = self.data_provider.get_trading_time_bounds(date)
         self.data_provider.prepare_to_load_orders_for_date(date)
         while start_dt < end_dt:
@@ -54,7 +53,7 @@ class MarketPlace:
                 trades = self.matching_engine.process_order(order)
                 for trade in trades:
                     self.broker.process_trade(trade)
-            Robot.set_datetime(start_dt+self.discreteness)
+            BaseRobot.set_datetime(start_dt + self.discreteness)
             for robot in self.robots:
                 self.broker.update_equity_curve(bound_dt.timestamp(),
                                                 robot.name)
@@ -70,9 +69,11 @@ class MarketPlace:
                 robot.reset()
             start_dt += self.discreteness
         if self.save_path:
-            self.matching_engine.save_tables(self.save_path, date)
+            self.matching_engine.save_tables(self.save_path)
+            self.broker.save_equity_curves(self.save_path)
 
     def start(self) -> None:
         self.train_robots()
+        self.matching_engine.create_tables()
         for date in self.dates:
             self.trade(date)

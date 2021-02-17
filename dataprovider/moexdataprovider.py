@@ -1,11 +1,11 @@
 from typing import Iterable, Dict, Tuple, List, Set
 import datetime as dt
 
-from dataprovider.dataprovider import DataProvider
+from dataprovider.basedataprovider import BaseDataProvider
 from db.dataclasses import Order
 
 
-class DefaultDataProvider(DataProvider):
+class MOEXDataProvider(BaseDataProvider):
     __dt_fmt = '%H%M%S%f'
 
     def __init__(self,

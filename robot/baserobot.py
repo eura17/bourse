@@ -1,13 +1,15 @@
-from typing import Union, List, Tuple, Dict
+from typing import Union, List
 import datetime as dt
 from abc import abstractmethod
 
 from db import User
-from db.dataclasses import Order, Candle
+from db.dataclasses import Order, Candle, OrderBook
 
 
-class Robot(User):
+class BaseRobot(User):
     __DATETIME: dt.datetime = None
+    __del_order = 'del'
+    __set_order = 'set'
     __slots__ = (
         '__name',
         '__orders',
@@ -55,8 +57,7 @@ class Robot(User):
     def min_ask_price(self, ticker: str) -> Union[int, float]:
         return self._get_min_ask_price_from_order_book(ticker)
 
-    def order_book(self, ticker: str) \
-            -> Dict[str, List[Tuple[int, float]]]:
+    def order_book(self, ticker: str) -> OrderBook:
         return self._get_order_book(ticker)
 
     def last_trade_price(self, ticker: str) -> Union[int, float]:
@@ -98,7 +99,7 @@ class Robot(User):
             operation,
             order_type,
             self.__DATETIME,
-            'set',
+            self.__set_order,
             price,
             volume,
             self.name
@@ -113,7 +114,7 @@ class Robot(User):
             order.operation,
             order.type,
             self.__DATETIME,
-            'del',
+            self.__del_order,
             order.price,
             volume or order.volume,
             self.name

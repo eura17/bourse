@@ -1,11 +1,11 @@
 from typing import Union, Iterable, Dict, Tuple
 from collections import defaultdict
 
-from broker.broker import Broker
+from broker.basebroker import BaseBroker
 from db.dataclasses import Order, Trade
 
 
-class DefaultBroker(Broker):
+class DefaultBroker(BaseBroker):
     __DEFAULT_START_ACCOUNT = 100_000
     __DEFAULT_LEVERAGE = 1
     __DEFAULT_COMMISSION_ABS = 0
@@ -27,17 +27,17 @@ class DefaultBroker(Broker):
                     self.__DEFAULT_START_ACCOUNT
                 )
             self.accounts_settings[robot]['leverage'] = \
-                accounts_settings.get(robot, {}).get(
+                accounts_settings.get(robot, dict()).get(
                     'leverage',
                     self.__DEFAULT_LEVERAGE
                 )
             self.accounts_settings[robot]['commission_abs'] = \
-                accounts_settings.get(robot, {}).get(
+                accounts_settings.get(robot, dict()).get(
                     'commission_abs',
                     self.__DEFAULT_COMMISSION_ABS
                 )
             self.accounts_settings[robot]['commission_pct'] = \
-                accounts_settings.get(robot, {}).get(
+                accounts_settings.get(robot, dict()).get(
                     'commission_pct',
                     self.__DEFAULT_COMMISSION_PCT
                 )

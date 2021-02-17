@@ -5,11 +5,12 @@ from db import User
 from db.dataclasses import Order, Trade
 
 
-class Broker(User):
+class BaseBroker(User):
     def __init__(self,
                  robots: Iterable[str]):
         super().__init__('broker', 'broker')
         self._set_robots(robots)
+        self.__robots = set(robots)
 
     @abstractmethod
     def validate_order(self, order: Order) -> bool: ...
@@ -35,7 +36,7 @@ class Broker(User):
 
     def get_asset(self,
                   robot: str,
-                  asset: str) -> Tuple[int, float]:
+                  asset: str) -> Tuple[float, int]:
         return self._get_asset_from_account(robot, asset)
 
     def get_all_assets(self, robot: str) -> Dict[str, Tuple[int, float]]:
@@ -51,8 +52,14 @@ class Broker(User):
     def create_equity_curve(self, robot: str) -> None:
         self._create_equity_curve_space(robot)
 
-    def update_equity_curve(self, datetime: float, robot: str) -> None:
+    def update_equity_curve(self,
+                            datetime: float,
+                            robot: str) -> None:
         self._update_equity_curve_space(datetime, robot)
+
+    def save_equity_curves(self, path: str):
+        for robot in self.__robots:
+            self._save_equity_curve(robot, path)
 
     def liquidation_cost(self, robot: str) -> Union[int, float]:
         return self._get_liquidation_cost_for_account(robot)
