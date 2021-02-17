@@ -1,4 +1,4 @@
-from typing import Union, List
+from typing import Union, List, Dict, Tuple
 from abc import ABC
 import datetime as dt
 
@@ -230,7 +230,7 @@ class User(ABC):
             raise OperationError(operation)
 
     def _get_order_book(self, ticker: str) \
-            -> dict[str, List[tuple[int, float]]]:
+            -> Dict[str, List[Tuple[int, float]]]:
         bid_ask = self.__conn.call(
             'get_order_book',
             (ticker,)
@@ -340,7 +340,7 @@ class User(ABC):
 
     def _get_asset_from_account(self,
                                 robot: str,
-                                asset: str) -> list[int, float]:
+                                asset: str) -> Tuple[int, float]:
         if asset in OrderTradeMixin().tickers or asset == 'CASH':
             return self.__conn.call(
                 'get_asset_from_account',
@@ -350,7 +350,7 @@ class User(ABC):
             raise TickerError(asset)
 
     def _get_all_assets_from_account(self, robot: str) \
-            -> dict[str, tuple[int, float]]:
+            -> Dict[str, Tuple[int, float]]:
         return self.__conn.call(
             'get_all_assets_from_account',
             (robot,)

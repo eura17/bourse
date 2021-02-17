@@ -1,4 +1,4 @@
-from typing import Iterable, Dict, Tuple, List
+from typing import Iterable, Dict, Tuple, List, Set
 import datetime as dt
 
 from dataprovider.dataprovider import DataProvider
@@ -17,10 +17,10 @@ class DefaultDataProvider(DataProvider):
         self.current_file = None
         self._extra_order = None
 
-    def get_dates(self) -> list[dt.date]:
+    def get_dates(self) -> List[dt.date]:
         return sorted(self.date_to_file)
 
-    def get_tickers(self) -> set[str]:
+    def get_tickers(self) -> Set[str]:
         return self.tickers
 
     def prepare_to_load_orders_for_date(self, date: dt.datetime) -> None:

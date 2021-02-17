@@ -1,4 +1,4 @@
-from typing import Union, List
+from typing import Union, List, Dict
 import datetime as dt
 from copy import deepcopy
 
@@ -13,8 +13,8 @@ class MarketPlace:
                  data_provider: DataProvider,
                  robots: List[Robot],
                  training_data=None,
-                 accounts_settings: dict[str,
-                                         dict[str,
+                 accounts_settings: Dict[str,
+                                         Dict[str,
                                               Union[int, float]]] = None,
                  discreteness: dt.timedelta = dt.timedelta(seconds=1),
                  save_path: str = None):

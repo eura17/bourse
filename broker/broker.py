@@ -1,4 +1,4 @@
-from typing import Union, Iterable, Dict
+from typing import Union, Iterable, Dict, Tuple
 from abc import abstractmethod
 
 from db import User
@@ -35,10 +35,10 @@ class Broker(User):
 
     def get_asset(self,
                   robot: str,
-                  asset: str) -> list[int, float]:
+                  asset: str) -> Tuple[int, float]:
         return self._get_asset_from_account(robot, asset)
 
-    def get_all_assets(self, robot: str) -> Dict[str, tuple[int, float]]:
+    def get_all_assets(self, robot: str) -> Dict[str, Tuple[int, float]]:
         return self._get_all_assets_from_account(robot)
 
     def change_asset(self,

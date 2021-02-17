@@ -1,4 +1,4 @@
-from typing import Union, List
+from typing import Union, List, Tuple, Dict
 import datetime as dt
 from abc import abstractmethod
 
@@ -56,7 +56,7 @@ class Robot(User):
         return self._get_min_ask_price_from_order_book(ticker)
 
     def order_book(self, ticker: str) \
-            -> dict[str, list[tuple[int, float]]]:
+            -> Dict[str, List[Tuple[int, float]]]:
         return self._get_order_book(ticker)
 
     def last_trade_price(self, ticker: str) -> Union[int, float]:
@@ -65,7 +65,7 @@ class Robot(User):
     def candles(self,
                 ticker: str,
                 timeframe: str,
-                n: int = 1) -> list[Candle]:
+                n: int = 1) -> List[Candle]:
         return self._get_candles_from_trade_log(
             ticker,
             timeframe,
