@@ -1,4 +1,4 @@
-if box.schema.func:exists('create_order_book_spaces') then
+if box.schema.func.exists('create_order_book_spaces') then
     box.schema.func.drop('create_order_book_spaces')
 end
 box.schema.func.create('create_order_book_spaces')
@@ -55,7 +55,7 @@ function create_order_book_spaces(ticker)
     end
 end
 
-if box.schema.func:exists('add_order_to_order_book') then
+if box.schema.func.exists('add_order_to_order_book') then
     box.schema.func.drop('add_order_to_order_book')
 end
 box.schema.func.create('add_order_to_order_book')
@@ -77,7 +77,7 @@ function add_order_to_order_book(ticker,
                             robot}
 end
 
-if box.schema.func:exists('update_order_in_order_book') then
+if box.schema.func.exists('update_order_in_order_book') then
     box.schema.func.drop('update_order_in_order_book')
 end
 box.schema.func.create('update_order_in_order_book')
@@ -94,7 +94,7 @@ function update_order_in_order_book(ticker,
     end
 end
 
-if box.schema.func:exists('delete_order_from_order_book') then
+if box.schema.func.exists('delete_order_from_order_book') then
     box.schema.func.drop('delete_order_from_order_book')
 end
 box.schema.func.create('delete_order_from_order_book')
@@ -116,7 +116,7 @@ function delete_order_from_order_book(ticker,
     end
 end
 
-if box.schema.func:exists('is_counter_orders_exist_in_order_book') then
+if box.schema.func.exists('is_counter_orders_exist_in_order_book') then
     box.schema.func.drop('is_counter_orders_exist_in_order_book')
 end
 box.schema.func.create('is_counter_orders_exist_in_order_book')
@@ -127,7 +127,7 @@ function is_counter_orders_exist_in_order_book(ticker,
     return box.space[space]:len() > 0
 end
 
-if box.schema.func:exists('is_order_intersects_order_book') then
+if box.schema.func.exists('is_order_intersects_order_book') then
     box.schema.func.drop('is_order_intersects_order_book')
 end
 box.schema.func.create('is_order_intersects_order_book')
@@ -142,7 +142,7 @@ function is_order_intersects_order_book(ticker,
     end
 end
 
-if box.schema.func:exists('get_min_ask_price_from_order_book') then
+if box.schema.func.exists('get_min_ask_price_from_order_book') then
     box.schema.func.drop('get_min_ask_price_from_order_book')
 end
 box.schema.func.create('get_min_ask_price_from_order_book')
@@ -158,7 +158,7 @@ function get_min_ask_price_from_order_book(ticker)
     end
 end
 
-if box.schema.func:exists('get_min_ask_order_from_order_book') then
+if box.schema.func.exists('get_min_ask_order_from_order_book') then
     box.schema.func.drop('get_min_ask_order_from_order_book')
 end
 box.schema.func.create('get_min_ask_order_from_order_book')
@@ -188,7 +188,7 @@ function get_min_ask_order_from_order_book(ticker)
     end
 end
 
-if box.schema.func:exists('get_max_bid_price_from_order_book') then
+if box.schema.func.exists('get_max_bid_price_from_order_book') then
     box.schema.func.drop('get_max_bid_price_from_order_book')
 end
 box.schema.func.create('get_max_bid_price_from_order_book')
@@ -204,7 +204,7 @@ function get_max_bid_price_from_order_book(ticker)
     end
 end
 
-if box.schema.func:exists('get_max_bid_order_from_order_book') then
+if box.schema.func.exists('get_max_bid_order_from_order_book') then
     box.schema.func.drop('get_max_bid_order_from_order_book')
 end
 box.schema.func.create('get_max_bid_order_from_order_book')
@@ -232,7 +232,7 @@ function get_max_bid_order_from_order_book(ticker)
     end
 end
 
-if box.schema.func:exists('get_active_orders_from_order_book') then
+if box.schema.func.exists('get_active_orders_from_order_book') then
     box.schema.func.drop('get_active_orders_from_order_book')
 end
 box.schema.func.create('get_active_orders_from_order_book')
@@ -288,7 +288,7 @@ function get_active_orders_from_order_book(robot, ticker, operation)
     return orders
 end
 
-if box.schema.func:exists('get_order_book') then
+if box.schema.func.exists('get_order_book') then
     box.schema.func.drop('get_order_book')
 end
 box.schema.func.create('get_order_book')

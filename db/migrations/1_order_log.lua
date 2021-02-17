@@ -1,4 +1,4 @@
-if box.schema.func:exists('create_order_log_space') then
+if box.schema.func.exists('create_order_log_space') then
     box.schema.func.drop('create_order_log_space')
 end
 box.schema.func.create('create_order_log_space')
@@ -67,7 +67,7 @@ function create_order_log_space()
     )
 end
 
-if box.schema.func:exists('add_order_to_order_log') then
+if box.schema.func.exists('add_order_to_order_log') then
     box.schema.func.drop('add_order_to_order_log')
 end
 box.schema.func.create('add_order_to_order_log')
@@ -104,7 +104,7 @@ function add_order_to_order_log(order_no,
     return order_no
 end
 
-if box.schema.func:exists('get_amount_of_orders_in_order_log') then
+if box.schema.func.exists('get_amount_of_orders_in_order_log') then
     box.schema.func.drop('get_amount_of_orders_in_order_log')
 end
 box.schema.func.create('get_amount_of_orders_in_order_log')
@@ -113,7 +113,7 @@ function get_amount_of_orders_in_order_log()
     return box.space['order_log']:len()
 end
 
-if box.schema.func:exists('get_orders_from_order_log') then
+if box.schema.func.exists('get_orders_from_order_log') then
     box.schema.func.drop('get_orders_from_order_log')
 end
 box.schema.func.create('get_orders_from_order_log')
