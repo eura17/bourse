@@ -1,79 +1,65 @@
-from typing import Union, List, Dict
-import datetime as dt
+from typing import Iterable
 from copy import deepcopy
+from contextlib import suppress
 
 from dataprovider import BaseDataProvider
 from robot import BaseRobot
-from matchingengine import FIFOMatchingEngine
-from broker import DefaultBroker
+from matchingengine import BaseMatchingEngine
+from broker import BaseBroker
 
 
 class MarketPlace:
     def __init__(self,
                  data_provider: BaseDataProvider,
-                 robots: List[BaseRobot],
+                 matching_engine: BaseMatchingEngine,
+                 broker: BaseBroker,
+                 robots: Iterable[BaseRobot],
                  training_data=None,
-                 accounts_settings: Dict[str,
-                                         Dict[str,
-                                              Union[int, float]]] = None,
-                 discreteness: dt.timedelta = dt.timedelta(seconds=1),
                  save_path: str = None):
-        super().__init__()
-        robot_names = set()
-        for robot in robots:
-            robot_names.add(robot.name)
+        self.__data_provider = data_provider
+        self.__matching_engine = matching_engine
+        self.__broker = broker
 
-        self.data_provider = data_provider
-        self.dates = self.data_provider.get_dates()
-        tickers = self.data_provider.get_tickers()
+        self.__robots = robots
+        self.__training_data = training_data
 
-        self.matching_engine = FIFOMatchingEngine(tickers)
-        self.broker = DefaultBroker(robot_names, tickers, accounts_settings)
+        self.__save_path = save_path
 
-        self.robots = robots
-        self.training_data = training_data
-        self.discreteness = discreteness
-        self.save_path = save_path
+        self.__suppress = suppress(BaseException)
 
     def train_robots(self) -> None:
-        for robot in self.robots:
-            try:
-                robot.training(deepcopy(self.training_data))
-            except Exception as e:
-                print(e)
-        del self.training_data
+        for robot in self.__robots:
+            with self.__suppress:
+                robot.training(deepcopy(self.__training_data))
+        del self.__training_data
 
-    def trade(self, date: dt.date) -> None:
-        start_dt, end_dt = self.data_provider.get_trading_time_bounds(date)
-        self.data_provider.prepare_to_load_orders_for_date(date)
-        while start_dt < end_dt:
-            bound_dt = start_dt+self.discreteness
-            orders = self.data_provider.get_orders(start_dt, bound_dt)
+    def trade(self) -> None:
+        for orders in self.__data_provider:
             for order in orders:
-                trades = self.matching_engine.process_order(order)
+                trades = self.__matching_engine.process_order(order)
                 for trade in trades:
-                    self.broker.process_trade(trade)
-            BaseRobot.set_datetime(start_dt + self.discreteness)
-            for robot in self.robots:
-                self.broker.update_equity_curve(bound_dt.timestamp(),
-                                                robot.name)
-                try:
+                    self.__broker.process_trade(trade)
+            BaseRobot.set_datetime(self.__data_provider.datetime)
+            for robot in self.__robots:
+                self.__broker.update_equity_curve(
+                    self.__data_provider.datetime.timestamp(),
+                    robot.name
+                )
+                with self.__suppress:
                     robot.trading()
-                except Exception as e:
-                    print(e)
                 for order in robot.orders:
-                    if self.broker.validate_order(order):
-                        trades = self.matching_engine.process_order(order)
+                    if self.__broker.validate_order(order):
+                        trades = self.__matching_engine.process_order(order)
                         for trade in trades:
-                            self.broker.process_trade(trade)
+                            self.__broker.process_trade(trade)
                 robot.reset()
-            start_dt += self.discreteness
-        if self.save_path:
-            self.matching_engine.save_tables(self.save_path)
-            self.broker.save_equity_curves(self.save_path)
 
     def start(self) -> None:
+        self.__matching_engine.create_tables()
+
         self.train_robots()
-        self.matching_engine.create_tables()
-        for date in self.dates:
-            self.trade(date)
+        self.trade()
+
+        if self.__save_path:
+            self.__matching_engine.save_tables(self.__save_path)
+            self.__broker.save_equity_curves(self.__save_path)

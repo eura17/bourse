@@ -2,6 +2,7 @@ from typing import Union, Iterable, Dict, Tuple
 from collections import defaultdict
 
 from broker.basebroker import BaseBroker
+from robot import BaseRobot
 from db.dataclasses import Order, Trade
 
 
@@ -12,7 +13,7 @@ class DefaultBroker(BaseBroker):
     __DEFAULT_COMMISSION_PCT = 0
 
     def __init__(self,
-                 robots: Iterable[str],
+                 robots: Iterable[BaseRobot],
                  tickers: Iterable[str],
                  accounts_settings: Dict[str,
                                          Dict[str,

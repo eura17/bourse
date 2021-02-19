@@ -2,15 +2,17 @@ from typing import Union, Iterable, Dict, Tuple
 from abc import abstractmethod
 
 from db import User
+from robot import BaseRobot
 from db.dataclasses import Order, Trade
 
 
 class BaseBroker(User):
-    def __init__(self,
-                 robots: Iterable[str]):
+    def __init__(self, robots: Iterable[BaseRobot]):
         super().__init__('broker', 'broker')
-        self._set_robots(robots)
-        self.__robots = set(robots)
+        self.__robots = set()
+        for robot in robots:
+            self.__robots += robot.name
+        self._set_robots(self.__robots)
 
     @abstractmethod
     def validate_order(self, order: Order) -> bool: ...

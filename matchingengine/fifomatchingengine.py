@@ -10,7 +10,7 @@ class FIFOMatchingEngine(BaseMatchingEngine):
         self.delete_order(order)
         return []
 
-    def execute_market_order(self, order: Order) -> [Trade]:
+    def execute_market_order(self, order: Order) -> List[Trade]:
         trades = []
         while not order.is_executed() and \
                 self.counter_orders_exist(order):
