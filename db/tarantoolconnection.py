@@ -1,5 +1,4 @@
 import os
-import shutil
 from shutil import rmtree
 from subprocess import Popen, PIPE
 from time import sleep
