@@ -16,8 +16,8 @@ class User(ABC):
     __CHUNK_SIZE = 100_000
 
     __TIMEFRAMES = {
-        '1m': dt.timedelta(seconds=1),
-        '2m': dt.timedelta(seconds=2),
+        '1m': dt.timedelta(minutes=1),
+        '2m': dt.timedelta(minutes=2),
         '3m': dt.timedelta(minutes=3),
         '4m': dt.timedelta(minutes=4),
         '5m': dt.timedelta(minutes=5),
@@ -310,6 +310,8 @@ class User(ABC):
                                     n: int = 1) -> List[Candle]:
         if timeframe not in self.__TIMEFRAMES:
             raise TimeFrameError(timeframe)
+        real_n = n
+        n += 1
         tf = self.__TIMEFRAMES[timeframe]
         minutes = datetime.hour * 60 + datetime.minute
         minutes -= minutes % (tf.seconds // 60)
@@ -328,6 +330,8 @@ class User(ABC):
         candles = []
         for raw_candle in raw_candles:
             candles.append(Candle(*raw_candle))
+        if len(candles) > real_n:
+            return candles[-real_n:]
         return candles
 
     def _create_account_space(self, robot: str) -> None:

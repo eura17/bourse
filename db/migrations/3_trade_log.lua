@@ -125,13 +125,13 @@ end
 box.schema.func.create('get_candles_from_trade_log')
 box.schema.user.grant('robot', 'execute', 'function', 'get_candles_from_trade_log')
 function get_candles_from_trade_log(ticker, stop_dt, ofst)
-    local first_trade = box.space['trade_log']:select(1)
+    local first_trade = box.space['trade_log']:select(1)[1]
     if first_trade == nil then
         return {}
     end
     local first_trade_time = first_trade[3]
     if stop_dt + ofst < first_trade_time then
-        return {}
+        stop_dt = first_trade_time
     end
     local all_trades = box.space['trade_log'].index.datetime:select(stop_dt, {iterator='GE'})
     local candles = {}
