@@ -11,7 +11,7 @@ class BaseBroker(User):
         super().__init__('broker', 'broker')
         self.__robots = set()
         for robot in robots:
-            self.__robots += robot.name
+            self.__robots |= {robot.name}
         self._set_robots(self.__robots)
 
     @abstractmethod

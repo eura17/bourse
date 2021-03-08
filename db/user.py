@@ -1,4 +1,4 @@
-from typing import Union, List, Dict, Tuple
+from typing import Union, List, Dict, Tuple, Set, Iterable
 from abc import ABC
 import datetime as dt
 
@@ -26,8 +26,13 @@ class User(ABC):
         '15m': dt.timedelta(minutes=15),
         '20m': dt.timedelta(minutes=20),
         '30m': dt.timedelta(minutes=30),
-        '1h': dt.timedelta(hours=1)
+        '1h': dt.timedelta(hours=1),
+        '2h': dt.timedelta(hours=2),
+        '4h': dt.timedelta(hours=4),
+        '8h': dt.timedelta(hours=8),
+        '1d': dt.timedelta(days=1)
     }
+    __TICKERS = set()
 
     def __init__(self,
                  user: str = None,
@@ -39,6 +44,14 @@ class User(ABC):
             password
         )
 
+    @property
+    def timeframes(self) -> Dict[str, dt.timedelta]:
+        return self.__TIMEFRAMES
+
+    @property
+    def tickers(self) -> Set[str]:
+        return self.__TICKERS
+
     @classmethod
     def set_host(cls, value: str) -> None:
         cls.__HOST = value
@@ -47,9 +60,11 @@ class User(ABC):
     def set_port(cls, value: int) -> None:
         cls.__PORT = value
 
-    @staticmethod
-    def _set_tickers(tickers):
+    @classmethod
+    def _set_tickers(cls, tickers: Iterable[str]):
+        tickers = set(tickers)
         OrderTradeMixin.set_tickers(tickers)
+        cls.__TICKERS |= tickers
 
     @staticmethod
     def _set_robots(robots):

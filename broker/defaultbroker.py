@@ -22,28 +22,41 @@ class DefaultBroker(BaseBroker):
         accounts_settings = accounts_settings or {}
         self.accounts_settings = defaultdict(dict)
         for robot in robots:
-            self.accounts_settings[robot]['start_account'] = \
-                accounts_settings.get(robot, dict()).get(
+            self.accounts_settings[robot.name]['start_account'] = \
+                accounts_settings.get(robot.name, dict()).get(
                     'start_account',
                     self.__DEFAULT_START_ACCOUNT
                 )
-            self.accounts_settings[robot]['leverage'] = \
-                accounts_settings.get(robot, dict()).get(
+            self.accounts_settings[robot.name]['leverage'] = \
+                accounts_settings.get(robot.name, dict()).get(
                     'leverage',
                     self.__DEFAULT_LEVERAGE
                 )
-            self.accounts_settings[robot]['commission_abs'] = \
-                accounts_settings.get(robot, dict()).get(
+            self.accounts_settings[robot.name]['commission_abs'] = \
+                accounts_settings.get(robot.name, dict()).get(
                     'commission_abs',
                     self.__DEFAULT_COMMISSION_ABS
                 )
-            self.accounts_settings[robot]['commission_pct'] = \
-                accounts_settings.get(robot, dict()).get(
+            self.accounts_settings[robot.name]['commission_pct'] = \
+                accounts_settings.get(robot.name, dict()).get(
                     'commission_pct',
                     self.__DEFAULT_COMMISSION_PCT
                 )
-            self.open_account(robot,
-                              tickers)
+            self.open_account(robot.name, tickers)
+
+    @classmethod
+    def set_default(cls,
+                    start_account: Union[int, float] = None,
+                    leverage: Union[int, float] = None,
+                    commission_abs: Union[int, float] = None,
+                    commission_pct: Union[int, float] = None):
+        cls.__DEFAULT_START_ACCOUNT = start_account or \
+            cls.__DEFAULT_START_ACCOUNT
+        cls.__DEFAULT_LEVERAGE = leverage or cls.__DEFAULT_LEVERAGE
+        cls.__DEFAULT_COMMISSION_ABS = commission_abs or \
+            cls.__DEFAULT_COMMISSION_ABS
+        cls.__DEFAULT_COMMISSION_PCT = commission_pct or \
+            cls.__DEFAULT_COMMISSION_PCT
 
     def open_account(self,
                      robot: str,

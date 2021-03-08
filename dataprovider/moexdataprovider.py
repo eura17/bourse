@@ -81,5 +81,7 @@ class MOEXDataProvider(BaseDataProvider):
         if len(orders) == 0:
             if not self.__open_next_file():
                 return None
+            else:
+                return self.next_orders()
         return orders
 
