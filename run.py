@@ -25,7 +25,8 @@ DATE_TO_FILE = {
                                         'OrderLog20151211.txt')
 }
 STRATEGY_TO_ROBOT = {
-    'MACD': MACDRobot
+    'MACD': MACDRobot,
+    'RSI': RSIRobot
 }
 
 
