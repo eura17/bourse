@@ -41,7 +41,7 @@ class DefaultBroker(BaseBroker):
                 accounts_settings.get(robot.name, dict()).get(
                     'commission_pct',
                     self.__DEFAULT_COMMISSION_PCT
-                )
+                ) / 100
             self.open_account(robot.name, tickers)
 
     @classmethod

@@ -26,7 +26,8 @@ DATE_TO_FILE = {
 }
 STRATEGY_TO_ROBOT = {
     'MACD': MACDRobot,
-    'RSI': RSIRobot
+    'RSI': RSIRobot,
+    'Hurst': HurstRobot
 }
 
 

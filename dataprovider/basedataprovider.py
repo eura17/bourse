@@ -57,6 +57,7 @@ class BaseDataProvider(User):
     def __next__(self) -> Iterable[Order]:
         orders = self.next_orders()
         if orders is None:
+            self._off()
             raise StopIteration()
         else:
             self.datetime += self.discreteness

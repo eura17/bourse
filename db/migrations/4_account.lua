@@ -133,3 +133,20 @@ function get_liquidation_cost_for_account(robot)
     end
     return liquidation_cost
 end
+
+if box.schema.func.exists('get_pedestal') then
+    box.schema.func.drop('get_pedestal')
+end
+box.schema.func.create('get_pedestal')
+function get_pedestal()
+    local accounts = {}
+    for k, _ in pairs(box.space) do
+        k = tostring(k)
+        local starts_with = 'account_'
+        if k:sub(1, #starts_with) == starts_with then
+            local account = k:sub(#starts_with+1, #k)
+            accounts[account] = get_liquidation_cost_for_account(account)
+        end
+    end
+    return accounts
+end

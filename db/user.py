@@ -415,3 +415,8 @@ class User(ABC):
             'update_equity_curve_space',
             (datetime, robot)
         )
+
+    def _off(self):
+        self.__conn.call(
+            'off'
+        )

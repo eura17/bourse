@@ -42,6 +42,7 @@ if box.schema.user.exists('data_provider') then
     box.schema.user.drop('data_provider')
 end
 box.schema.user.create('data_provider', {password='data_provider'})
+box.schema.user.grant('data_provider', 'read,write,execute', 'universe')
 
 -- user: robot
 if box.schema.user.exists('robot') then
