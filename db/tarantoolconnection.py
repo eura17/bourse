@@ -12,7 +12,7 @@ class TarantoolConnection:
     __work_dir = 'tarantool_work_dir'
     __migrations_dir = 'migrations'
 
-    def __init__(self, port: int):
+    def __init__(self, port: int, kill: bool = False):
         self.__tarantool_subprocess = Popen(
             ['tarantool'],
             stdin=PIPE,
@@ -20,6 +20,7 @@ class TarantoolConnection:
         )
         self.__host = 'localhost'
         self.__port = port
+        self.__kill = kill
 
     def __enter__(self) -> None:
         self.__configure(self.__port)
@@ -30,8 +31,9 @@ class TarantoolConnection:
         User.set_port(self.__port)
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
-        self.__tarantool_subprocess.kill()
-        rmtree(self.__get_work_dir())
+        if self.__kill:
+            self.__tarantool_subprocess.kill()
+            rmtree(self.__get_work_dir())
 
     def __configure(self, port: int) -> None:
         base_path = self.__get_base_path()

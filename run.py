@@ -70,8 +70,9 @@ def run(tickers: List[str],
         commission_abs: Union[int, float] = 0,
         commission_pct: Union[int, float] = 0,
         discreteness: dt.timedelta = dt.timedelta(seconds=1),
-        port: int = 4444):
-    with TarantoolConnection(port):
+        port: int = 4444,
+        kill: bool = False):
+    with TarantoolConnection(port, kill):
         _run(
             tickers,
             dates,
