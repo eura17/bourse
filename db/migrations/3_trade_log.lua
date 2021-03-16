@@ -2,7 +2,6 @@ if box.schema.func.exists('create_trade_log_space') then
     box.schema.func.drop('create_trade_log_space')
 end
 box.schema.func.create('create_trade_log_space')
-box.schema.user.grant('matching_engine', 'execute', 'function', 'create_trade_log_space')
 function create_trade_log_space()
     if box.space['trade_log'] ~= box.NULL then
         box.space['trade_log']:drop()
@@ -79,7 +78,6 @@ if box.schema.func.exists('add_trade_to_trade_log') then
     box.schema.func.drop('add_trade_to_trade_log')
 end
 box.schema.func.create('add_trade_to_trade_log')
-box.schema.user.grant('matching_engine', 'execute', 'function', 'add_trade_to_trade_log')
 function add_trade_to_trade_log(ticker,
                                 datetime,
                                 buy_order_no,
@@ -103,9 +101,6 @@ if box.schema.func.exists('get_last_trade_price_from_trade_log') then
     box.schema.func.drop('get_last_trade_price_from_trade_log')
 end
 box.schema.func.create('get_last_trade_price_from_trade_log')
-box.schema.user.grant('matching_engine', 'execute', 'function', 'get_last_trade_price_from_trade_log')
-box.schema.user.grant('broker', 'execute', 'function', 'get_last_trade_price_from_trade_log')
-box.schema.user.grant('robot', 'execute', 'function', 'get_last_trade_price_from_trade_log')
 function get_last_trade_price_from_trade_log(ticker)
     local last_trade_n = box.space['trade_log']:len()
     local last_trade
@@ -123,7 +118,6 @@ if box.schema.func.exists('get_candles_from_trade_log') then
     box.schema.func.drop('get_candles_from_trade_log')
 end
 box.schema.func.create('get_candles_from_trade_log')
-box.schema.user.grant('robot', 'execute', 'function', 'get_candles_from_trade_log')
 function get_candles_from_trade_log(ticker, stop_dt, ofst)
     local first_trade = box.space['trade_log']:select(1)[1]
     if first_trade == nil then
@@ -184,7 +178,6 @@ if box.schema.func.exists('get_amount_of_trades_in_trade_log') then
     box.schema.func.drop('get_amount_of_trades_in_trade_log')
 end
 box.schema.func.create('get_amount_of_trades_in_trade_log')
-box.schema.user.grant('matching_engine', 'execute', 'function', 'get_amount_of_trades_in_trade_log')
 function get_amount_of_trades_in_trade_log()
     return box.space['trade_log']:len()
 end
@@ -193,7 +186,6 @@ if box.schema.func.exists('get_trades_from_trade_log') then
     box.schema.func.drop('get_trades_from_trade_log')
 end
 box.schema.func.create('get_trades_from_trade_log')
-box.schema.user.grant('matching_engine', 'execute', 'function', 'get_trades_from_trade_log')
 function get_trades_from_trade_log(start_no, end_no)
     return box.space['trade_log']:select(start_no, {iterator='GE', limit = end_no - start_no})
 end

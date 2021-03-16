@@ -2,7 +2,6 @@ if box.schema.func.exists('create_order_book_spaces') then
     box.schema.func.drop('create_order_book_spaces')
 end
 box.schema.func.create('create_order_book_spaces')
-box.schema.user.grant('matching_engine', 'execute', 'function', 'create_order_book_spaces')
 function create_order_book_spaces(ticker)
     local bid_ask = {'bid', 'ask'}
     for _, value in pairs(bid_ask) do
@@ -59,7 +58,6 @@ if box.schema.func.exists('add_order_to_order_book') then
     box.schema.func.drop('add_order_to_order_book')
 end
 box.schema.func.create('add_order_to_order_book')
-box.schema.user.grant('matching_engine', 'execute', 'function', 'add_order_to_order_book')
 function add_order_to_order_book(ticker,
                                  operation,
                                  order_no,
@@ -81,7 +79,6 @@ if box.schema.func.exists('update_order_in_order_book') then
     box.schema.func.drop('update_order_in_order_book')
 end
 box.schema.func.create('update_order_in_order_book')
-box.schema.user.grant('matching_engine', 'execute', 'function', 'update_order_in_order_book')
 function update_order_in_order_book(ticker,
                                     operation,
                                     order_no,
@@ -98,7 +95,6 @@ if box.schema.func.exists('delete_order_from_order_book') then
     box.schema.func.drop('delete_order_from_order_book')
 end
 box.schema.func.create('delete_order_from_order_book')
-box.schema.user.grant('matching_engine', 'execute', 'function', 'delete_order_from_order_book')
 function delete_order_from_order_book(ticker,
                                       operation,
                                       order_no,
@@ -120,7 +116,6 @@ if box.schema.func.exists('is_counter_orders_exist_in_order_book') then
     box.schema.func.drop('is_counter_orders_exist_in_order_book')
 end
 box.schema.func.create('is_counter_orders_exist_in_order_book')
-box.schema.user.grant('matching_engine', 'execute', 'function', 'is_counter_orders_exist_in_order_book')
 function is_counter_orders_exist_in_order_book(ticker,
                                                operation)
     local space = (operation == 'buy' and 'ask' or operation == 'sell' and 'bid')..'_'..ticker
@@ -131,7 +126,6 @@ if box.schema.func.exists('is_order_intersects_order_book') then
     box.schema.func.drop('is_order_intersects_order_book')
 end
 box.schema.func.create('is_order_intersects_order_book')
-box.schema.user.grant('matching_engine', 'execute', 'function', 'is_order_intersects_order_book')
 function is_order_intersects_order_book(ticker,
                                         operation,
                                         price)
@@ -146,9 +140,6 @@ if box.schema.func.exists('get_min_ask_price_from_order_book') then
     box.schema.func.drop('get_min_ask_price_from_order_book')
 end
 box.schema.func.create('get_min_ask_price_from_order_book')
-box.schema.user.grant('matching_engine', 'execute', 'function', 'get_min_ask_price_from_order_book')
-box.schema.user.grant('broker', 'execute', 'function', 'get_min_ask_price_from_order_book')
-box.schema.user.grant('robot', 'execute', 'function', 'get_min_ask_price_from_order_book')
 function get_min_ask_price_from_order_book(ticker)
     local min_ask = box.space['ask_'..ticker].index.price:min()
     if min_ask ~= box.NULL then
@@ -162,7 +153,6 @@ if box.schema.func.exists('get_min_ask_order_from_order_book') then
     box.schema.func.drop('get_min_ask_order_from_order_book')
 end
 box.schema.func.create('get_min_ask_order_from_order_book')
-box.schema.user.grant('matching_engine', 'execute', 'function', 'get_min_ask_order_from_order_book')
 function get_min_ask_order_from_order_book(ticker)
     local min_ask = get_min_ask_price_from_order_book(ticker)
     if min_ask ~= box.NULL then
@@ -192,9 +182,6 @@ if box.schema.func.exists('get_max_bid_price_from_order_book') then
     box.schema.func.drop('get_max_bid_price_from_order_book')
 end
 box.schema.func.create('get_max_bid_price_from_order_book')
-box.schema.user.grant('matching_engine', 'execute', 'function', 'get_max_bid_price_from_order_book')
-box.schema.user.grant('broker', 'execute', 'function', 'get_max_bid_price_from_order_book')
-box.schema.user.grant('robot', 'execute', 'function', 'get_max_bid_price_from_order_book')
 function get_max_bid_price_from_order_book(ticker)
     local max_bid = box.space['bid_'..ticker].index.price:max()
     if max_bid ~= box.NULL then
@@ -208,7 +195,6 @@ if box.schema.func.exists('get_max_bid_order_from_order_book') then
     box.schema.func.drop('get_max_bid_order_from_order_book')
 end
 box.schema.func.create('get_max_bid_order_from_order_book')
-box.schema.user.grant('matching_engine', 'execute', 'function', 'get_max_bid_order_from_order_book')
 function get_max_bid_order_from_order_book(ticker)
     local max_bid = get_max_bid_price_from_order_book(ticker)
     if max_bid ~= box.NULL then
@@ -236,7 +222,6 @@ if box.schema.func.exists('get_active_orders_from_order_book') then
     box.schema.func.drop('get_active_orders_from_order_book')
 end
 box.schema.func.create('get_active_orders_from_order_book')
-box.schema.user.grant('robot', 'execute', 'function', 'get_active_orders_from_order_book')
 function get_active_orders_from_order_book(robot, ticker, operation)
     local raw_orders = {buy = {}, sell = {}}
     if operation == 'buy' then
@@ -292,7 +277,6 @@ if box.schema.func.exists('get_order_book') then
     box.schema.func.drop('get_order_book')
 end
 box.schema.func.create('get_order_book')
-box.schema.user.grant('robot', 'execute', 'function', 'get_order_book')
 function get_order_book(ticker)
     local raw_bids = box.space['bid_'..ticker]:select()
     local bids = {}

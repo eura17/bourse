@@ -2,7 +2,6 @@ if box.schema.func.exists('create_equity_curve_space') then
     box.schema.func.drop('create_equity_curve_space')
 end
 box.schema.func.create('create_equity_curve_space')
-box.schema.user.grant('broker', 'execute', 'function', 'create_equity_curve_space')
 function create_equity_curve_space(robot)
     local space = 'equity_curve_'..robot
     if box.space[space] ~= box.NULL then
@@ -38,7 +37,6 @@ if box.schema.func.exists('update_equity_curve_space') then
     box.schema.func.drop('update_equity_curve_space')
 end
 box.schema.func.create('update_equity_curve_space')
-box.schema.user.grant('broker', 'execute', 'function', 'update_equity_curve_space')
 function update_equity_curve_space(datetime, robot)
     local space = 'equity_curve_'..robot
     box.space[space]:insert({nil, datetime, get_liquidation_cost_for_account(robot)})
@@ -48,7 +46,6 @@ if box.schema.func.exists('get_amount_of_records_in_equity_curve') then
     box.schema.func.drop('get_amount_of_records_in_equity_curve')
 end
 box.schema.func.create('get_amount_of_records_in_equity_curve')
-box.schema.user.grant('broker', 'execute', 'function', 'get_amount_of_records_in_equity_curve')
 function get_amount_of_records_in_equity_curve(robot)
     local space = 'equity_curve_'..robot
     return box.space[space]:len()
@@ -58,7 +55,6 @@ if box.schema.func.exists('get_records_from_equity_curve') then
     box.schema.func.drop('get_records_from_equity_curve')
 end
 box.schema.func.create('get_records_from_equity_curve')
-box.schema.user.grant('broker', 'execute', 'function', 'get_records_from_equity_curve')
 function get_records_from_equity_curve(robot, start_no, end_no)
     local space = 'equity_curve_'..robot
     return box.space[space]:select(start_no, {iterator = 'GE', limit = end_no-start_no})
