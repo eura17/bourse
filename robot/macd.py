@@ -16,8 +16,8 @@ class MACDRobot(BaseRobot):
                                        self.__DEFAULT_SLOW_PERIOD)
         self.signal_period = options.get('signal_period',
                                          self.__DEFAULT_SIGNAL_PERIOD)
-        if (p := options.get('periodicity', self.__DEFAULT_PERIODICITY)) \
-                in self.timeframes:
+        p = options.get('periodicity', self.__DEFAULT_PERIODICITY)
+        if p in self.timeframes:
             self.periodicity = p
         else:
             self.periodicity = self.__DEFAULT_PERIODICITY

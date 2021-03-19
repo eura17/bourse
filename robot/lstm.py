@@ -10,12 +10,22 @@ from robot.baserobot import BaseRobot
 
 
 class LSTMRobot(BaseRobot):
+    __DEFAULT_LOOKBACK_PERIOD = 30
+    __DEFAULT_FORECAST_PERIOD = 22
+    __DEFAULT_PERIODICITY = '1m'
+
     def __init__(self, options):
         super().__init__('LSTM')
 
-        self.forecast_period = options['forecast_period']
-        self.lookback_period = options['lookback_period']
-        self.periodicity = '1m'
+        self.forecast_period = options.get('forecast_period',
+                                           self.__DEFAULT_FORECAST_PERIOD)
+        self.lookback_period = options.get('lookback_period',
+                                           self.__DEFAULT_LOOKBACK_PERIOD)
+        p = options.get('periodicity', self.__DEFAULT_PERIODICITY)
+        if p in self.timeframes:
+            self.periodicity = p
+        else:
+            self.periodicity = self.__DEFAULT_PERIODICITY
 
         self.data = None
         self.scaler = None

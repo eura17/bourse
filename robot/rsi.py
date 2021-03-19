@@ -9,8 +9,8 @@ class RSIRobot(BaseRobot):
     def __init__(self, options: Dict[str, Union[int, float]]):
         super().__init__('RSI')
         self.period = options.get('RSI_period', self.__DEFAULT_PERIOD)
-        if (p := options.get('periodicity', self.__DEFAULT_PERIODICITY)) \
-                in self.timeframes:
+        p = options.get('periodicity', self.__DEFAULT_PERIODICITY)
+        if p in self.timeframes:
             self.periodicity = p
         else:
             self.periodicity = self.__DEFAULT_PERIODICITY
