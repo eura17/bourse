@@ -1,6 +1,5 @@
 import os
 
-import pandas as pd
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 from tensorflow.keras import Sequential
@@ -34,12 +33,12 @@ class LSTMRobot(BaseRobot):
         self.max_money_for_lot = None
 
     def fit_lstm(self):
-        X_train = self.data.drop(['close'], axis=1)
-        y_train = self.data['close']
-        X_train = np.reshape(X_train.values, (X_train.shape[0], X_train.shape[1], 1))
+        X_train = self.data[:, [0, 1, 2, 4]]
+        y_train = self.data[:, 3]
+        X_train = np.reshape(X_train, (X_train.shape[0], X_train.shape[1], 1))
 
         n_s = len(self.data)
-        n_i = len(self.data.iloc[0])
+        n_i = len(self.data[0])
         n_o = 1
         a = 2
         n_h = int(n_s / (a * (n_i + n_o)))
@@ -61,16 +60,18 @@ class LSTMRobot(BaseRobot):
     def training(self, training_data) -> None:
         self.max_money_for_lot = self.liquidation_cost() / len(self.tickers)
 
-        self.data = pd.read_csv(
-            os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                         'candles.csv')
-        )[['open', 'high', 'low', 'close', 'volume']]
+        self.data = []
+        with open(os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                         'candles.csv')) as f:
+            f.readline()
+            for line in f:
+                self.data.append(
+                    list(map(float, line.split(',')[2:]))
+                )
+        self.data = np.array(self.data)
         self.scaler = MinMaxScaler()
 
-        self.data = pd.DataFrame(
-            self.scaler.fit_transform(self.data),
-            columns=self.data.columns
-        )
+        self.data = self.scaler.fit_transform(self.data)
         self.fit_lstm()
 
     def trading(self) -> None:
@@ -91,18 +92,11 @@ class LSTMRobot(BaseRobot):
                                 self.order_set(ticker, 'buy', 'market', lots)
 
     def refit(self, candle):
-        new_info = pd.DataFrame(
-            {
-                'open': [candle.open],
-                'high': [candle.high],
-                'low': [candle.low],
-                'close': [candle.close],
-                'volume': [candle.volume]
-            }
-        )
+        new_info = np.array(
+            [candle.open, candle.high, candle.low, candle.close, candle.volume]
+        ).reshape((1, -1))
         scaled = self.scaler.transform(new_info)
-        self.data = self.data.append(
-            pd.DataFrame(scaled, columns=self.data.columns), ignore_index=True)
+        self.data = np.append(self.data, scaled)
 
     def predict(self, candle):
         pred = self.regression.predict(np.array(

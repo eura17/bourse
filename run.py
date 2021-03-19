@@ -28,7 +28,6 @@ STRATEGY_TO_ROBOT = {
     'MACD': MACDRobot,
     'MACD_EMA': MACDEMARobot,
     'RSI': RSIRobot,
-    'Hurst': HurstRobot,
     'LSTM': LSTMRobot
 }
 
