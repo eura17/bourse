@@ -33,7 +33,7 @@ class MACDEMARobot(BaseRobot):
     def trading(self) -> None:
         if self.datetime.second == 1:
             for ticker in self.tickers:
-                candles = self.candles(ticker, self.periodicity, self.n)
+                candles = self.candles(ticker, self.periodicity, self.n//2)
                 if len(candles) >= self.slow_period:
                     fast_sma = sum([c.close for c in candles[-self.fast_period//2:]]) / self.fast_period//2
                     slow_sma = sum([c.close for c in candles[-self.slow_period//2:]]) / self.slow_period//2
