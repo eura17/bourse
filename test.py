@@ -1,6 +1,6 @@
 import requests
 
-api = 'http://127.0.1.1:5000/api/simulation/run'
+api = 'http://127.0.1.1:5000/run'
 
 data = {
     'tickers': ['AFLT'],
@@ -35,4 +35,4 @@ data = {
     'port': 4442,
 }
 
-requests.post(api, data=data)
+requests.post(api, json=data)

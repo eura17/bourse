@@ -18,7 +18,7 @@ async def run() -> Tuple[Dict[str, Any], int]:
     if data is None:
         return {
                    'error_code': 'bourse.request.invalid',
-                   'error_message': 'Invalid request'
+                   'error_message': 'No data'
                }, 400
 
     tickers = data['tickers']
@@ -55,7 +55,7 @@ async def run() -> Tuple[Dict[str, Any], int]:
             port=port
         )
 
-    b = threading.Thread(name='background', target=run_async)
+    b = threading.Thread(name=str(test_id), target=run_async)
 
     b.start()
 
