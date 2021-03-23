@@ -31,8 +31,7 @@ data = {
     'leverage': 3,
     'commission_abs': 0,
     'commission_pct': 0,
-    'discreteness': 1,
-    'port': 4442,
+    'discreteness': 1
 }
 
 requests.post(api, json=data)
