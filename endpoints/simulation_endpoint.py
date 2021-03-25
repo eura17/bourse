@@ -29,11 +29,10 @@ async def run() -> Tuple[Dict[str, Any], int]:
     commission_abs = data['commission_abs']
     commission_pct = data['commission_pct']
     discreteness = data['discreteness']
-    port = data['port']
 
     if dates is None or strategies is None or start_account is None or \
             leverage is None or commission_abs is None or \
-            commission_pct is None or discreteness is None or port is None or \
+            commission_pct is None or discreteness is None or \
             tickers is None or len(tickers) == 0:
         return {
                    'error_code': 'bourse.request.invalid',
@@ -52,7 +51,6 @@ async def run() -> Tuple[Dict[str, Any], int]:
             commission_abs=commission_abs,
             commission_pct=commission_pct,
             discreteness=dt.timedelta(seconds=discreteness),
-            port=port
         )
 
     b = threading.Thread(name=str(test_id), target=run_async)
