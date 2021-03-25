@@ -34,13 +34,13 @@ class MACDEMARobot(BaseRobot):
         if self.datetime.second == 1:
             for ticker in self.tickers:
                 candles = self.candles(ticker, self.periodicity, self.n//2)
-                if len(candles) >= self.slow_period:
+                if len(candles) >= self.slow_period//2:
                     fast_sma = sum([c.close for c in candles[-self.fast_period//2:]]) / self.fast_period//2
                     slow_sma = sum([c.close for c in candles[-self.slow_period//2:]]) / self.slow_period//2
                     macd = fast_sma - slow_sma
-                    if len(candles) >= self.n and \
-                            len(self.macd) >= self.signal_period:
-                        self.macd = self.macd[-self.signal_period:]
+                    if len(candles) >= self.n//2 and \
+                            len(self.macd) >= self.signal_period//2:
+                        self.macd = self.macd[-self.signal_period//2:]
                         signal_sma = sum(self.macd[-self.signal_period//2:]) / self.signal_period//2
 
                         lots = 2 * int(self.max_money_for_lot /
