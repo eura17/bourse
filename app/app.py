@@ -29,10 +29,10 @@ class App:
 
     def run(self, host: str = '127.0.0.1',
             port: int = 5000) -> None:
-        signals = (signal.SIGHUP, signal.SIGTERM, signal.SIGINT)
+        #signals = (signal.SIGHUP, signal.SIGTERM, signal.SIGINT)
 
-        for s in signals:
-            self.loop.add_signal_handler(s, lambda: asyncio.create_task(self.stop()))
+        #for s in signals:
+        #    self.loop.add_signal_handler(s, lambda: asyncio.create_task(self.stop()))
 
         try:
             self.loop.create_task(self.api.run_task(host=host, port=port,
